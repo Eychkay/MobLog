@@ -2,7 +2,7 @@
 
 Public source: https://github.com/Eychkay/MobLog
 
-The source matching MobLog 1.1.1 is tagged **v1.1.1**. The installable package
+Source version: **1.1.2**. The release manifest links its exact repository commit. The installable package
 contains the `MobLog` and `MobLog_TrinityDB` directories. Both contain readable,
 editable Lua source and their required license and attribution notices.
 

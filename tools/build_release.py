@@ -7,9 +7,10 @@ from zipfile import ZipFile, ZIP_DEFLATED, ZIP_STORED
 import argparse
 import hashlib
 import json
+import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='1.1.1'
+VERSION='1.1.2'
 
 
 def digest(path):
@@ -75,7 +76,10 @@ def build(with_source=False):
         with ZipFile(source_zip) as output:
             if output.testzip(): raise ValueError('Source ZIP CRC failed')
     archives=(install_zip,source_zip) if with_source else (install_zip,)
-    release={'source_url':f'https://github.com/Eychkay/MobLog/tree/v{VERSION}','version':VERSION,'date':'2026-11-01','previous_release':'1.1.0',
+    commit=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True)
+    source_url='https://github.com/Eychkay/MobLog'
+    if commit.returncode==0: source_url+='/tree/'+commit.stdout.strip()
+    release={'source_url':source_url,'version':VERSION,'date':'2026-11-01','previous_release':'1.1.1',
              'license':'GPL-2.0-or-later','runtime_files':len(runtime),'source_files':len(source) if with_source else None,
              'archives':{path.name:{'bytes':path.stat().st_size,'sha256':digest(path)} for path in archives}}
     (ROOT/'publishing'/f'release-manifest-{VERSION}.json').write_text(json.dumps(release,indent=2)+'\n',encoding='utf-8')

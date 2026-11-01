@@ -29,6 +29,41 @@ function ML.CollectionProgress(mob)
     return text .. " · " .. mob.count .. " kills · Maximum rank", 1, rank
 end
 
+function ML.CollectionAchievementDate(mob, rank)
+    local achievements = ML.db.collectionAchievements or {}
+    local earliest
+    for _, member in ipairs(mob.members or {mob}) do
+        local earned = achievements[member.id]
+        local stamp = type(earned) == "table" and earned[rank.key]
+        if type(stamp) == "number" and stamp > 0 and (not earliest or stamp < earliest) then
+            earliest = stamp
+        end
+    end
+    return earliest
+end
+
+function ML.CollectionAchievementLines(mob)
+    local lines = {}
+    for _, rank in ipairs(ML.KillRanks) do
+        if (mob.count or 0) < rank.kills then break end
+        local stamp = ML.CollectionAchievementDate(mob, rank)
+        lines[#lines + 1] = "|c" .. rank.hex .. rank.label .. "|r · " ..
+            (stamp and ("Achieved: " .. date("%Y-%m-%d", stamp)) or "Achievement date not recorded")
+    end
+    return lines
+end
+
+local function RecordAchievement(group, rank, stamp)
+    ML.db.collectionAchievements = ML.db.collectionAchievements or {}
+    -- Keep real NPC IDs so switching variants or regrouping preserves earned dates.
+    local first = ML.CollectionAchievementDate(group, rank) or stamp
+    for _, member in ipairs(group.members) do
+        local earned = ML.db.collectionAchievements[member.id] or {}
+        ML.db.collectionAchievements[member.id] = earned
+        earned[rank.key] = first
+    end
+end
+
 function ML.IsHuntTarget(mob)
     local targets = ML.db.huntTargets or {}
     for _, member in ipairs(mob.members or {mob}) do
@@ -67,6 +102,16 @@ function ML.CheckCollectionUnlocks(groups)
         local added = 0
         for _, member in ipairs(group.members) do added = added + (increments[member.id] or 0) end
         if added > 0 then
+            local stamp = 0
+            for _, member in ipairs(group.members) do
+                if increments[member.id] then stamp = math.max(stamp, member.lastKilled or 0) end
+            end
+            if stamp == 0 then stamp = time() end
+            for _, rank in ipairs(ML.KillRanks) do
+                if group.count - added < rank.kills and group.count >= rank.kills then
+                    RecordAchievement(group, rank, stamp)
+                end
+            end
             local before = ML.KillRank(group.count - added)
             local after = ML.KillRank(group.count)
             if after and before ~= after then

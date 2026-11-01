@@ -26,3 +26,5 @@
 !/publishing/MobLog-logo-400.png
 __pycache__/
 *.pyc
+!/publishing/changelog-1.1.2.md
+!/publishing/release-notes-1.1.2.md

@@ -1,7 +1,7 @@
 ## Interface: 120000, 120001, 120005, 120007, 120100
 ## Title: MobLog Catalog
 ## Notes: Read-only creature and possible loot catalog.
-## Version: 1.1.1
+## Version: 1.1.2
 ## X-License: GPL-2.0-or-later
 ## X-Data-Version: TDB1210.26091 + ATT 5ee014cf
 ## Dependencies: MobLog

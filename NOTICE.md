@@ -2,7 +2,7 @@
 
 Copyright (C) 2026 MobLog contributors.
 
-MobLog 1.1.1's original addon source, build scripts, documentation and original
+MobLog 1.1.2's original addon source, build scripts, documentation and original
 packaged artwork are distributed under the GNU General Public License, version 2
 or (at your option) any later version: **GPL-2.0-or-later**. See `LICENSE` for the
 complete license. You may redistribute and modify this work under those terms.
@@ -29,7 +29,7 @@ two catalog manifests and notices. No upstream drop percentages are imported.
 ## Corresponding source
 
 The matching addon source, importers, editable intermediate data and source
-manifests are published at https://github.com/Eychkay/MobLog under tag v1.1.1.
+manifests are published at https://github.com/Eychkay/MobLog with the exact commit linked in the release manifest.
 Pinned original inputs and checked rebuild instructions are listed in `SOURCE.md`.
 An optional offline source archive can also be built from that source tree.
 

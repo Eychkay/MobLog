@@ -259,6 +259,9 @@ local function Details(mob, keepModel)
         "", "First seen: " .. date("%Y-%m-%d", mob.first),
         "Last seen: " .. date("%Y-%m-%d %H:%M", mob.last) }
     table.insert(lines, 2, "Collection: " .. ML.CollectionProgress(collectionMob))
+    for index, achievement in ipairs(ML.CollectionAchievementLines(collectionMob)) do
+        table.insert(lines, index + 2, achievement)
+    end
     if ML.IsHuntTarget(collectionMob) then table.insert(lines, 2, "|cffffd166Hunt target · Pinned to the top of the list|r") end
     if count > 1 then
         table.insert(lines, 2, string.format("Group: %d NPC variants · %d kills · %d sightings", count, group.count, group.sightings))
@@ -388,6 +391,9 @@ local function RenderVisibleRows()
                 GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
                 GameTooltip:AddLine(self.mob.name, 0.92, 0.76, 0.45)
                 GameTooltip:AddLine(ML.CollectionProgress(self.mob), 0.85, 0.82, 0.74, true)
+                for _, achievement in ipairs(ML.CollectionAchievementLines(self.mob)) do
+                    GameTooltip:AddLine(achievement, 0.85, 0.82, 0.74, true)
+                end
                 GameTooltip:AddLine("Ranks: Bronze 50 · Silver 250 · Gold 1,000 · Master 5,000", 0.85, 0.82, 0.74, true)
                 GameTooltip:AddLine(self.mob.provisional and "NPC ID pending" or (ML.ClassificationLabel(self.mob) .. " · NPC #" .. self.mob.id))
                 local metadataStatus = ML.NPCMetadataStatus(self.mob)

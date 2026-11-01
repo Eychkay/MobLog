@@ -1,4 +1,4 @@
-# MobLog 1.1.1 — Retail / Midnight
+# MobLog 1.1.2 — Retail / Midnight
 
 MobLog is an account-wide bestiary for personal NPC encounters, recorded kills,
 observed loot, character contributions, collection ranks and locations. It also
@@ -6,7 +6,7 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.1.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.2.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 These are the only two addon folders required. No external addon or library is
 needed. Personal records and preferences are preserved.
@@ -61,6 +61,8 @@ to manufacture 100 percent; numeric ID searches still work without readable name
 - Grouped collection ranks are Bronze 50, Silver 250, Gold 1,000 and Master 5,000
   recorded kills. Existing records count. Original NPC loot statistics remain
   separate. Pin hunt targets, maintain item wishlists, and review session progress.
+- Newly earned collection ranks save their achievement date account-wide. Dates
+  appear in creature details and list tooltips; older undated ranks are identified.
 - Areas summarizes personal records, not a guaranteed complete zone checklist.
 
 ## Data, licenses and source
@@ -83,5 +85,5 @@ Download the installable ZIP from [GitHub Releases](https://github.com/Eychkay/M
 Install both included addon directories. Do not install GitHub's automatic
 "Source code" ZIP directly into your AddOns folder.
 
-Changes since 1.1.0: [Changelog](publishing/changelog-1.1.1.md).
-Release overview: [Release notes](publishing/release-notes-1.1.1.md).
+Changes since 1.1.1: [Changelog](publishing/changelog-1.1.2.md).
+Release overview: [Release notes](publishing/release-notes-1.1.2.md).
