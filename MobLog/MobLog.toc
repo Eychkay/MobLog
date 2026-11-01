@@ -1,0 +1,36 @@
+## Interface: 120000, 120001, 120005, 120007, 120100
+## Title: MobLog
+## Notes: Your account-wide bestiary. Models, drops, characters and map locations.
+## Author: MobLog
+## Version: 1.1.1
+## X-License: GPL-2.0-or-later
+## IconTexture: Interface\AddOns\MobLog\Media\Logo
+## SavedVariables: MobLogDB
+Core.lua
+CityMode.lua
+MobDetails.lua
+Sorting.lua
+Catalog.lua
+Metadata.lua
+Options.lua
+Locations.lua
+KillTracker.lua
+Characters.lua
+Sightings.lua
+Collection.lua
+Session.lua
+Areas.lua
+AreaNavigation.lua
+Habitats.lua
+QualityOfLife.lua
+InstanceMaps.lua
+KnownLocations.lua
+Tooltip.lua
+HuntTracker.lua
+Loot.lua
+ItemCatalog.lua
+ItemBrowser.lua
+MobLoot.lua
+Portraits.lua
+UI.lua
+Minimap.lua

@@ -1,0 +1,17 @@
+{
+  "habitat_npcs": 24502,
+  "habitat_areas": 451,
+  "release": "TDB1210.26091",
+  "archive": "TDB_full_1210.26091_2026_09_09.7z",
+  "sha256": "fc5513334d7534a19f533124a95910193c8150379e5ed8d0db3e547ac2c5a3f5",
+  "npcs": 227633,
+  "items": 31375,
+  "loot_templates": 13068,
+  "loot_groups": 10681,
+  "item_source_groups": 8025,
+  "areas": 0,
+  "maps": 0,
+  "spawn_npcs": 28931,
+  "spawn_points": 258748,
+  "url": "https://github.com/TrinityCore/TrinityCore/releases/tag/TDB1210.26091"
+}

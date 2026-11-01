@@ -1,0 +1,29 @@
+{
+  "commit": "5ee014cf4cf4c9e4d4c8f3c0d2333e3ac695ad07",
+  "url": "https://github.com/ATTWoWAddon/AllTheThings/tree/5ee014cf4cf4c9e4d4c8f3c0d2333e3ac695ad07",
+  "inputs": {
+    "LICENSE": "955281b9174e0f66b08c8e83d31e0f38b2fcaa247ca3af92d1723d81a13cddfb",
+    "db/Standard/LocalizationDB.lua": "2c3659eca9ce880ccbbbbe09356eddb7cd54ec57b675a8d5c5d2c8a2a9332b8b",
+    "db/Standard/Categories/Instances.lua": "09cc392af67cd15cb93430dcdc38359c1d76bc157480b177e61f34a99b6c3a85",
+    "db/Standard/Categories/Zones.lua": "e2f0da2107c115e89452f9512de91a2b97cd362ff25dbf922ec615cf158442d5",
+    "db/Standard/Categories/WorldDrops.lua": "2b67a6d9c9c1a72fcf12d592221de360efa37b3d77f7ea14666a2699edf7cb90",
+    "db/Standard/Categories/Delves.lua": "bc78e6e65b87af2711779ce4523638050b4dad138f3b6ed873ef7291578a1b7c",
+    "db/Standard/Categories/ExpansionFeatures.lua": "9db95bd3f0f6dc2e73ed720ad004f247731fe2c86c065c190ebc2011f445fa64",
+    "db/Standard/Categories/WorldEvents.lua": "ce13a5067cdc033f56d58fb4a17c4759b56a8b4622efb9a4483d1a03870e1f44",
+    "db/Standard/Categories/Holidays.lua": "e49a84fbf9926f73df34fd5884a5c5e20548cd4b2b7890e9a224772b4d45b8bf",
+    "db/Standard/Categories/Secrets.lua": "ef46b31bb0c69e257e538a41997a63a6b3028c5e0e8e8cc9e824274d891e3814"
+  },
+  "policy": "Explicit encounter/NPC drops in allowlisted drop contexts only. No unavailable, purchase, quest-reward, container-content or dynamic branches.",
+  "subset_sha256": "e12793a858c73ca94ffd35a170e7a368f9e8aa678592fbbf5549b8435916bc3c",
+  "extractor_sha256": "510d8d263f49a227c2877d8f060cb96ee7b01e3a1c5dd724fc8200388a6a7a7e",
+  "npc_item_pairs": 30570,
+  "additional_npc_item_pairs": 24320,
+  "npcs": 5046,
+  "items": 20618,
+  "additional_items": 15140,
+  "skipped_unknown_npcs": [
+    184408,
+    267861
+  ],
+  "base_trinity_items": 16235
+}

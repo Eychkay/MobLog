@@ -1,0 +1,11 @@
+{
+  "commit": "5ee014cf4cf4c9e4d4c8f3c0d2333e3ac695ad07",
+  "inputs": {
+    ".contrib/.db/standard/.config/.wago/12 - Midnight/UiMap.12.1.5.70575.csv": "c07589d908b00d7d079e9e88b8c50d80ae8bd36631a661615bd7e636e5bbb7b3",
+    ".contrib/.db/standard/.config/.wago/12 - Midnight/UiMapAssignment.12.1.5.70575.csv": "69cacfcfe8ddda76b36b10fbfb96ebb313c0c429788a41f053352273ba819e8b"
+  },
+  "instance_maps": 333,
+  "generator_sha256": "1943eaeb2f3b1499fa751465bd0d74909cdc4d01c4cea0839fefee6eda00b0ef",
+  "output_sha256": "45b00661eba29c994c9d514796be34e823fc4f9b564b724c6d47c43bd38fa3c3",
+  "policy": "Main-system dungeon map entry points; parent before child; no spawn-floor inference."
+}

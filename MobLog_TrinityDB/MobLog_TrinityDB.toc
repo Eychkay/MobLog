@@ -1,0 +1,97 @@
+## Interface: 120000, 120001, 120005, 120007, 120100
+## Title: MobLog Catalog
+## Notes: Read-only creature and possible loot catalog.
+## Version: 1.1.1
+## X-License: GPL-2.0-or-later
+## X-Data-Version: TDB1210.26091 + ATT 5ee014cf
+## Dependencies: MobLog
+## LoadOnDemand: 1
+npcs-1.lua
+npcs-2.lua
+npcs-3.lua
+npcs-4.lua
+npcs-5.lua
+npcs-6.lua
+npcs-7.lua
+npcs-8.lua
+npcs-9.lua
+npcs-10.lua
+npcs-11.lua
+npcs-12.lua
+npcs-13.lua
+npcs-14.lua
+npcs-15.lua
+npcs-16.lua
+npcs-17.lua
+npcs-18.lua
+npcs-19.lua
+npcs-20.lua
+npcs-21.lua
+npcs-22.lua
+npcs-23.lua
+npcs-24.lua
+npcs-25.lua
+npcs-26.lua
+npcs-27.lua
+npcs-28.lua
+npcs-29.lua
+npcs-30.lua
+npcs-31.lua
+npcs-32.lua
+npcs-33.lua
+npcs-34.lua
+npcs-35.lua
+npcs-36.lua
+npcs-37.lua
+npcs-38.lua
+npcs-39.lua
+npcs-40.lua
+npcs-41.lua
+npcs-42.lua
+npcs-43.lua
+npcs-44.lua
+npcs-45.lua
+npcs-46.lua
+items-1.lua
+items-2.lua
+items-3.lua
+items-4.lua
+items-5.lua
+items-6.lua
+items-7.lua
+loot-1.lua
+loot-2.lua
+loot-3.lua
+lootGroups-1.lua
+lootGroups-2.lua
+lootGroups-3.lua
+spawns-1.lua
+spawns-2.lua
+spawns-3.lua
+spawns-4.lua
+spawns-5.lua
+spawns-6.lua
+habitats-1.lua
+habitats-2.lua
+habitats-3.lua
+habitats-4.lua
+habitats-5.lua
+habitatAreas-1.lua
+itemSources-1.lua
+itemSources-2.lua
+itemSources-3.lua
+itemSources-4.lua
+itemSources-5.lua
+itemSources-6.lua
+itemSources-7.lua
+itemSourceGroups-1.lua
+itemSourceGroups-2.lua
+dropNotes-1.lua
+dropNotes-2.lua
+dropNotes-3.lua
+dropNotes-4.lua
+dropNotes-5.lua
+dropNotes-6.lua
+dropNotes-7.lua
+npcOrder-1.lua
+Ready.lua
