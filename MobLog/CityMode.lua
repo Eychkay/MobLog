@@ -25,6 +25,7 @@ local capitals = {
     [2339] = true, -- Dornogal
     [2393] = true, -- Silvermoon (Midnight)
 }
+capitals = ML.ClientCapitals or capitals
 
 function ML.CityTargetOnlyActive()
     return active and ML.db and ML.db.options.autoTargetOnlyCities == true or false

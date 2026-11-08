@@ -1,4 +1,4 @@
-# MobLog 1.1.2 — Retail / Midnight
+# MobLog — Retail / Midnight and Forever
 
 MobLog is an account-wide bestiary for personal NPC encounters, recorded kills,
 observed loot, character contributions, collection ranks and locations. It also
@@ -85,5 +85,16 @@ Download the installable ZIP from [GitHub Releases](https://github.com/Eychkay/M
 Install both included addon directories. Do not install GitHub's automatic
 "Source code" ZIP directly into your AddOns folder.
 
-Changes since 1.1.1: [Changelog](publishing/changelog-1.1.2.md).
-Release overview: [Release notes](publishing/release-notes-1.1.2.md).
+Forever release: [Changelog](publishing/changelog-1.1.3.md).
+Forever overview: [Release notes](publishing/release-notes-1.1.3.md).
+
+## Forever
+
+The Forever release targets Forever 1.60.1
+(interface 16001). Install `MobLog` and `MobLog_ForeverDB` in the Forever AddOns
+folder and restart the game. Retail continues to use `MobLog_TrinityDB`.
+Each client selects its own catalog; records remain in that client's saved data.
+
+The Forever catalog uses separate creature, loot and map references. Coverage is
+incomplete: some names and creature details require a personal encounter before
+the game can supply them. Instances remain loot-based only.

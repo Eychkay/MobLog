@@ -2,7 +2,7 @@
 
 Public source: https://github.com/Eychkay/MobLog
 
-Source version: **1.1.2**. The release manifest links its exact repository commit. The installable package
+Source version: **1.1.3**. The release manifest links its exact repository commit. The Retail package
 contains the `MobLog` and `MobLog_TrinityDB` directories. Both contain readable,
 editable Lua source and their required license and attribution notices.
 
@@ -47,3 +47,21 @@ An optional complete offline source archive can be built explicitly with
 `python tools/build_release.py --with-source` after fetching the source inputs.
 Normal releases create only the installable ZIP; the release tag identifies the
 matching public source. The addon does not require ATT or Python at runtime.
+
+## Forever catalog
+
+The Forever package contains `MobLog` and `MobLog_ForeverDB`.
+The client selects its own catalog automatically. The Forever catalog uses the
+pinned ATT commit above, specifically `db/Camelot/`, for NPC references, possible
+drops and UI-map locations. Shared NPC names and creature types are taken from
+the checked-in Trinity-derived NPC source. Retail loot, display IDs and spawn
+geometry are excluded. Both GPL/MIT notices remain included. Exact input hashes
+and coverage are recorded in `MobLog_ForeverDB/forever-manifest.json`.
+
+```sh
+python tools/forever/import_catalog.py --fetch
+python tools/build_release.py --client forever
+```
+
+The first command fetches and verifies the pinned Forever inputs, then rebuilds
+the separate catalog. It does not require ATT to be installed.

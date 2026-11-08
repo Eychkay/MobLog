@@ -2,6 +2,20 @@
 -- Copyright (C) 2026 MobLog contributors
 local _, ML = ...
 
+local function VariantLabel(npc, item)
+    local labels, seen = {}, {}
+    local context = ML.CatalogDropNote(npc, item)
+    for difficulty in (context or ""):gmatch("Difficulty: ([^;/]+)") do
+        difficulty = difficulty:gsub("%s+$", "")
+        if not seen[difficulty] then
+            seen[difficulty] = true
+            labels[#labels + 1] = difficulty
+        end
+    end
+    local prefix = #labels > 0 and (table.concat(labels, " / ") .. " · ") or ""
+    return prefix .. "Item #" .. item
+end
+
 function ML.BuildMobLoot(parent,scroll,ui)
     local view={active=false,rows={},headers={},closed={observed=true,possible=true},entries={}}
     local summary=ui.Text(parent,10); summary:SetPoint("TOPLEFT"); summary:SetSize(412,22)
@@ -53,7 +67,8 @@ function ML.BuildMobLoot(parent,scroll,ui)
                         row:SetBackdropColor(0.075,0.06,0.04,1); row:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight","ADD")
                         row.icon=row:CreateTexture(nil,"ARTWORK"); row.icon:SetPoint("LEFT",5,0); row.icon:SetSize(30,30)
                         row.name=ui.Text(row,12); row.name:SetPoint("TOPLEFT",43,-5); row.name:SetSize(260,16); row.name:SetWordWrap(false)
-                        row.source=ui.Text(row,10); row.source:SetPoint("TOPLEFT",43,-24); row.source:SetSize(260,12); row.source:SetWordWrap(false)
+                        row.variant=ui.Text(row,10,{0.85,0.82,0.74}); row.variant:SetPoint("TOPLEFT",43,-24); row.variant:SetSize(260,12); row.variant:SetWordWrap(false)
+                        row.source=ui.Text(row,10); row.source:SetPoint("TOPLEFT",43,-39); row.source:SetSize(260,12); row.source:SetWordWrap(false)
                         row.count=ui.Text(row,13); row.count:SetPoint("RIGHT",-34,0)
                         row.wish=ui.Button(row,"+",20,function() ML.ToggleItemWishlist(row.entry.item.id) end)
                         row.wish:SetPoint("RIGHT",-5,0); row.wish:SetHeight(20)
@@ -74,6 +89,7 @@ function ML.BuildMobLoot(parent,scroll,ui)
                             else GameTooltip:AddLine("Not observed for this NPC. Availability may be conditional.",0.8,0.7,0.5,true) end
                             local context=ML.CatalogDropNote(self.mob.id,item.id)
                             if context then GameTooltip:AddLine("Known loot context: "..context,0.8,0.7,0.5,true) end
+                            GameTooltip:AddLine("Item ID: "..item.id,0.7,0.65,0.55)
                             GameTooltip:AddLine("Click: item sources · Ctrl-click: preview",0.7,0.65,0.55); GameTooltip:Show()
                         end)
                         row:SetScript("OnLeave",function() GameTooltip:Hide() end)
@@ -87,10 +103,11 @@ function ML.BuildMobLoot(parent,scroll,ui)
                         ML.LoadCatalogItem(item,true)
                         if originalLink then item.link=originalLink end
                         row.name:SetText(item.link or item.name); row.icon:SetTexture(item.icon or 134400)
+                        row.variant:SetText(VariantLabel(self.mob.id,item.id))
                         row.source:SetText(entry.observed and string.format("%.1f %% · %d / %d mobs",ML.DropRate(self.mob,item),item.corpses or 0,self.mob.count) or "Not observed for this NPC")
                         row.count:SetText(entry.observed and ("×"..item.quantity) or "")
                         row.wish:SetText(ML.IsWishlisted(item.id) and "*" or "+")
-                    else row.name:SetText(entry.message); row.source:SetText(""); row.count:SetText("") end
+                    else row.name:SetText(entry.message); row.variant:SetText(""); row.source:SetText(""); row.count:SetText("") end
                     row:Show()
                 end
             end
@@ -105,11 +122,19 @@ function ML.BuildMobLoot(parent,scroll,ui)
         local observed,possible,seen={},{},{}
         for id,item in pairs(mob.items or {}) do
             if (item.quantity or 0)>0 then
-                local copy=ML.CopyViewTable(item); copy.id=id; copy.name=copy.name or ("Item #"..id)
-                observed[#observed+1]=copy; seen[id]=true
+                local itemID=tonumber(id)
+                if itemID and not seen[itemID] then
+                    local copy=ML.CopyViewTable(item); copy.id=itemID; copy.name=copy.name or ("Item #"..itemID)
+                    observed[#observed+1]=copy; seen[itemID]=true
+                end
             end
         end
-        for _,id in ipairs(ML.CatalogMobDrops(mob.id)) do if not seen[id] then possible[#possible+1]=ML.CatalogItemInfo(id) end end
+        for _,id in ipairs(ML.CatalogMobDrops(mob.id)) do
+            local itemID=tonumber(id)
+            if itemID and not seen[itemID] then
+                possible[#possible+1]=ML.CatalogItemInfo(itemID); seen[itemID]=true
+            end
+        end
         local mode=ML.GetSortMode("mobLoot")
         for _,items in ipairs({observed,possible}) do
             table.sort(items,function(a,b) return ML.SortBefore(a,b,mode) end)
@@ -121,7 +146,7 @@ function ML.BuildMobLoot(parent,scroll,ui)
             if self.closed[key] then return end
             if #items==0 then self.entries[#self.entries+1]={message=empty,offset=offset,height=26}; offset=offset+26 end
             for _,item in ipairs(items) do
-                self.entries[#self.entries+1]={item=item,observed=key=="observed",offset=offset,height=46}; offset=offset+46
+                self.entries[#self.entries+1]={item=item,observed=key=="observed",offset=offset,height=60}; offset=offset+60
             end
         end
         Section("observed","Observed drops",observed,"No item drops recorded for this NPC yet.")

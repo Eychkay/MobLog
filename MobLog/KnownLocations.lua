@@ -6,7 +6,8 @@ local cachedNPC,cachedPage,cachedPoints
 local PAGE_SIZE=20
 
 local function Packed(id)
-    local data=ML.TrinityData and ML.TrinityData.ready and ML.TrinityData.spawns
+    local catalog=ML.TrinityData and ML.TrinityData.ready and ML.TrinityData
+    local data=catalog and (catalog.uiSpawns or catalog.spawns)
     if sourceData~=data then counts={}; cachedNPC,cachedPage,cachedPoints=nil,nil,nil; sourceData=data end
     return data and data[id]
 end
@@ -30,8 +31,13 @@ function ML.KnownLocationPage(id,page)
         index=index+1
         if index>last then break end
         if index>=first then
-            local map,x,y,z,area,flags=record:match("^([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)$")
-            points[#points+1]={worldMap=tonumber(map),worldX=tonumber(x),worldY=tonumber(y),worldZ=tonumber(z),areaID=tonumber(area),flags=tonumber(flags),known=true}
+            if ML.TrinityData.uiSpawns then
+                local map,x,y=record:match("^([^,]+),([^,]+),([^,]+)$")
+                points[#points+1]={map=tonumber(map),x=tonumber(x),y=tonumber(y),uiCoordinates=true,known=true}
+            else
+                local map,x,y,z,area,flags=record:match("^([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)$")
+                points[#points+1]={worldMap=tonumber(map),worldX=tonumber(x),worldY=tonumber(y),worldZ=tonumber(z),areaID=tonumber(area),flags=tonumber(flags),known=true}
+            end
         end
     end
     cachedNPC,cachedPage,cachedPoints=id,page,points
@@ -111,6 +117,18 @@ end
 function ML.ResolveKnownLocation(place)
     if place.resolved or (place.retryAfter and GetTime()<place.retryAfter) then return place end
     place.retryAfter=GetTime()+30
+    if place.uiCoordinates then
+        local ok,info=pcall(C_Map.GetMapInfo,place.map)
+        if ok and type(ML.Public(info))=="table" then
+            place.zone=ML.Public(info.name) or ("Map #"..place.map)
+            place.sub=""; place.viewMap=place.map
+            place.resolved=true; place.reason=nil
+        else
+            place.zone="Map #"..tostring(place.map)
+            place.reason="This location's map is unavailable in your client."
+        end
+        return place
+    end
     place.map,place.x,place.y,place.viewMap=nil,nil,nil,nil
     local area=(place.areaID and place.areaID>0) and ML.CatalogAreaName(place.areaID)
     local world=WorldName(place.worldMap)

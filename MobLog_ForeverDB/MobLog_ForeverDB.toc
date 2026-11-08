@@ -1,0 +1,30 @@
+## Interface: 16001
+## Title: MobLog Catalog (Forever)
+## Notes: Read-only creature and possible loot catalog for Forever.
+## Version: 1.1.3
+## X-License: GPL-2.0-or-later
+## Dependencies: MobLog
+## LoadOnDemand: 1
+npcs-1.lua
+npcs-2.lua
+npcs-3.lua
+npcs-4.lua
+npcs-5.lua
+npcDetails-1.lua
+items-1.lua
+items-2.lua
+loot-1.lua
+loot-2.lua
+itemSources-1.lua
+itemSources-2.lua
+dropNotes-1.lua
+dropNotes-2.lua
+dropNotes-3.lua
+habitatAreas-1.lua
+uiSpawns-1.lua
+uiSpawns-2.lua
+uiSpawns-3.lua
+uiSpawns-4.lua
+uiSpawns-5.lua
+npcOrder-1.lua
+Ready.lua

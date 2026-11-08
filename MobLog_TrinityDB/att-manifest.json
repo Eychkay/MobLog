@@ -15,7 +15,7 @@
   },
   "policy": "Explicit encounter/NPC drops in allowlisted drop contexts only. No unavailable, purchase, quest-reward, container-content or dynamic branches.",
   "subset_sha256": "e12793a858c73ca94ffd35a170e7a368f9e8aa678592fbbf5549b8435916bc3c",
-  "extractor_sha256": "510d8d263f49a227c2877d8f060cb96ee7b01e3a1c5dd724fc8200388a6a7a7e",
+  "extractor_sha256": "576749dd9a0e869c05ad6628028cede5e9b4f9ae71847bf7b7eafac5980977dc",
   "npc_item_pairs": 30570,
   "additional_npc_item_pairs": 24320,
   "npcs": 5046,

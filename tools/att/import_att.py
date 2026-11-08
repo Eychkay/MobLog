@@ -143,18 +143,18 @@ def literal(value):
     return value
 
 
-def fetch():
-    CACHE.mkdir(exist_ok=True)
+def fetch(flavor='Standard'):
+    CACHE.mkdir(parents=True,exist_ok=True)
     tree = json.load(urllib.request.urlopen(f'https://api.github.com/repos/ATTWoWAddon/AllTheThings/git/trees/{COMMIT}?recursive=1', timeout=45))
     (CACHE/'tree.json').write_text(json.dumps(tree), encoding='utf-8')
-    paths = ['LICENSE','db/Standard/LocalizationDB.lua'] + [f'db/Standard/Categories/{name}.lua' for name in CATEGORIES]
+    paths = ['LICENSE',f'db/{flavor}/LocalizationDB.lua'] + [f'db/{flavor}/Categories/{name}.lua' for name in CATEGORIES]
     for path in paths:
         url=f'https://raw.githubusercontent.com/ATTWoWAddon/AllTheThings/{COMMIT}/{urllib.parse.quote(path)}'
         target=CACHE/path; target.parent.mkdir(parents=True,exist_ok=True)
         target.write_bytes(urllib.request.urlopen(url,timeout=45).read())
 
 
-def build():
+def build(flavor='Standard', destination=None):
     tree = json.loads((CACHE/'tree.json').read_text(encoding='utf-8'))
     if tree['sha'] != COMMIT or tree.get('truncated'): raise ValueError('Unexpected ATT snapshot')
     blobs = {x['path']: x['sha'] for x in tree['tree'] if x['type']=='blob'}
@@ -166,7 +166,7 @@ def build():
         inputs[path]=hashlib.sha256(raw).hexdigest()
         return raw.decode('utf-8-sig')
     read('LICENSE')
-    localization=read('db/Standard/LocalizationDB.lua')
+    localization=read(f'db/{flavor}/LocalizationDB.lua')
     start=localization.index('localize(L.HEADER_NAMES, {')
     names=dict((int(k),v) for k,v in re.findall(r'^\s*\[(-?\d+)\]\s*=\s*(.*),$',localization[start:localization.find('\n})',start)],re.M))
     blocked_headers={key for key,label in names.items() if any(word in label.upper() for word in
@@ -254,7 +254,7 @@ def build():
         if isinstance(children,Table):
             for child in children.values: visit(child,state,aliases,category)
     for category in CATEGORIES:
-        text=read(f'db/Standard/Categories/{category}.lua')
+        text=read(f'db/{flavor}/Categories/{category}.lua')
         aliases={}
         for match in re.finditer(r'local ([A-Za-z_,]+)=([^;\n]+)',text):
             keys,values=match[1].split(','),match[2].split(',')
@@ -285,9 +285,12 @@ def build():
     output={'commit':COMMIT,'url':f'https://github.com/ATTWoWAddon/AllTheThings/tree/{COMMIT}',
             'inputs':inputs,'policy':'Explicit encounter/NPC drops in allowlisted drop contexts only. No unavailable, purchase, quest-reward, container-content or dynamic branches.',
             'pairs':records,'contexts':dict(contexts),'skipped':dict(skipped)}
-    destination=Path(__file__).with_name('enrichment.json')
+    if flavor!='Standard': output['flavor']=flavor
+    destination=Path(destination) if destination else Path(__file__).with_name('enrichment.json')
+    destination.parent.mkdir(parents=True,exist_ok=True)
     destination.write_text(json.dumps(output,ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8',newline='\n')
     print('Wrote',len(records),'NPC-item pairs;',len({r['item'] for r in records}),'items;',len({r['npc'] for r in records}),'NPCs.',flush=True)
+    return output
 
 
 if __name__=='__main__':

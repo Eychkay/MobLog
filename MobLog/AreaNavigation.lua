@@ -42,6 +42,13 @@ end
 function ML.CatalogAreaRegions(id)
     if zoneRegions[id] then return zoneRegions[id] end
     local regions={}
+    local uiMap=type(id)=="string" and tonumber(id:match("^ui:(%d+)$"))
+    if uiMap then
+        local key,name=ML.MapRegion(uiMap)
+        regions[key]=name
+        zoneRegions[id]=regions
+        return regions
+    end
     local world=type(id)=="string" and tonumber(id:match("^world:(%d+)$"))
     local instanceMap=world and ML.InstanceMaps and ML.InstanceMaps[world]
     if instanceMap then

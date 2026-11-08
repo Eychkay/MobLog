@@ -6,6 +6,7 @@
 !/README.md
 !/MobLog/
 !/MobLog_TrinityDB/
+!/MobLog_ForeverDB/
 !/tools/
 !/publishing/
 /tools/*
@@ -15,6 +16,9 @@
 /tools/trinity/*
 !/tools/trinity/import_catalog.py
 !/tools/att/
+!/tools/forever/
+/tools/forever/*
+!/tools/forever/import_catalog.py
 /tools/att/*
 !/tools/att/import_att.py
 !/tools/att/import_maps.py
@@ -28,3 +32,5 @@ __pycache__/
 *.pyc
 !/publishing/changelog-1.1.2.md
 !/publishing/release-notes-1.1.2.md
+!/publishing/changelog-1.1.3.md
+!/publishing/release-notes-1.1.3.md

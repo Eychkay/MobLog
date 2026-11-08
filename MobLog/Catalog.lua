@@ -12,7 +12,10 @@ function ML.BackgroundCatalogEnabled()
     return ML.db and ML.db.options and ML.db.options.backgroundCatalog~=false
 end
 local function NameKey(id)
-    if not catalogNames[id] then catalogNames[id]=string.lower(ML.TrinityData.npcs[id][1]) end
+    if not catalogNames[id] then
+        local name=ML.TrinityData.npcs[id][1]
+        catalogNames[id]=string.lower(name~="" and name or ("NPC #"..id))
+    end
     return catalogNames[id]
 end
 local typeNames={}
@@ -86,6 +89,9 @@ local function StartCatalogWorker()
     C_Timer.After(0,Step)
 end
 function ML.EnsureCatalog()
+    if ML.TrinityData and not ML.CatalogMatchesClient(ML.TrinityData) then
+        ML.TrinityData=nil
+    end
     if ML.TrinityData and ML.TrinityData.ready then return true end
     if ML.TrinityData and ML.TrinityData.queued then StartCatalogWorker(); return false end
     if ML.catalogLoadAttempted or ML.catalogLoadScheduled then return false end
@@ -99,10 +105,11 @@ function ML.EnsureCatalog()
         ML.catalogLoadScheduled=false; ML.catalogLoadAttempted=true
         local loader=C_AddOns and C_AddOns.LoadAddOn
         if loader then
-            local ok,loaded,reason=pcall(loader,"MobLog_TrinityDB")
+            local ok,loaded,reason=pcall(loader,ML.CatalogAddon)
             ML.catalogLoadReason=ok and reason or loaded
         end
         local data=ML.TrinityData
+        if data and not ML.CatalogMatchesClient(data) then data=nil; ML.TrinityData=nil end
         if data and data.queued then StartCatalogWorker(); return end
         -- Compatibility with older, already materialized catalog modules.
         if data and data.ready then
@@ -134,7 +141,7 @@ function ML.CatalogUnavailableText()
         if data.paused then return "Catalog preparation paused in combat." end
         return string.format("Preparing catalog: %d %%",math.floor(((data.jobIndex or 1)-1)/math.max(1,data.jobTotal or 1)*100))
     end
-    return "Catalog unavailable. Install/enable MobLog Catalog in AddOns, then restart WoW."
+    return "Catalog unavailable. Install/enable MobLog Catalog for this game version, then restart WoW."
 end
 function ML.ApplyCatalogMetadata(mob)
     local info=ML.TrinityData and ML.TrinityData.npcs[mob.id]
@@ -143,13 +150,19 @@ function ML.ApplyCatalogMetadata(mob)
     if not mob.classification or mob.classification=="unknown" then mob.classification=class[info[2]] end
     if not mob.displayID then mob.catalogDisplayID=info[4][1] end
     if not mob.tooltipType then mob.tooltipType=CreatureTypeName(info[3]) end
+    local details=ML.TrinityData.npcDetails and ML.TrinityData.npcDetails[mob.id]
+    if details and mob.boss==nil then mob.boss=details.boss end
 end
 function ML.CatalogAreaName(id)
     id=tonumber(id) or id
     if not areaNames[id] then
         local world=type(id)=="string" and tonumber(id:match("^world:(%d+)$"))
+        local uiMap=type(id)=="string" and tonumber(id:match("^ui:(%d+)$"))
         local name
-        if world and GetRealZoneText then
+        if uiMap and C_Map and C_Map.GetMapInfo then
+            local ok,info=pcall(C_Map.GetMapInfo,uiMap)
+            name=ok and type(ML.Public(info))=="table" and ML.Public(info.name)
+        elseif world and GetRealZoneText then
             local ok,value=pcall(GetRealZoneText,world)
             name=ok and ML.Public(value)
         elseif type(id)=="number" and C_Map and C_Map.GetAreaInfo then
@@ -158,7 +171,7 @@ function ML.CatalogAreaName(id)
         end
         if type(name)~="string" or name=="" then name=nil end
         local entry = ML.TrinityData and ML.TrinityData.areas[id]
-        areaNames[id] = name or (entry and entry[1] ~= "" and entry[1]) or ((world and "Map #" or "Area #") .. (world or id))
+        areaNames[id] = name or (entry and entry[1] ~= "" and entry[1]) or (((world or uiMap) and "Map #" or "Area #") .. (world or uiMap or id))
     end
     return areaNames[id]
 end
@@ -187,8 +200,9 @@ function ML.GetMob(id)
     local info = ML.TrinityData and ML.TrinityData.ready and ML.TrinityData.npcs[id]
     if not info then return nil end
     local displays = {}
+    local details=ML.TrinityData.npcDetails and ML.TrinityData.npcDetails[id]
     for _, display in ipairs(info[4]) do displays[display] = true end
-    return {id=id,name=info[1]~="" and info[1] or ("NPC #"..id),classification=class[info[2]],count=0,sightings=0,loot=0,manual=0,first=0,last=0,
+    return {id=id,name=info[1]~="" and info[1] or ("NPC #"..id),classification=class[info[2]],boss=details and details.boss,count=0,sightings=0,loot=0,manual=0,first=0,last=0,
         places={},sightingPlaces={},displayID=info[4][1],displayIDs=displays,catalogOnly=true,
         selectedDisplayID=ML.db.catalogAppearances and ML.db.catalogAppearances[id],tooltipType=CreatureTypeName(info[3])}
 end
