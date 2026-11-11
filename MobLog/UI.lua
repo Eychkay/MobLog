@@ -19,6 +19,27 @@ local lootRows, tabs, locationRows = {}, {}, {}
 local detailScroll
 local mobPage, itemPage, sessionPage, areaPage, pageTabs = nil, nil, nil, nil, {}
 local currentPage = "mobs"
+local album, albumInspecting, albumEntry, applyDetailLayout
+local listViewport, detailWidgets, viewButtons = nil, {}, {}
+local albumFilters={choices={
+    {key="all",label="All entries"}, {key="hostile",label="Hostile"},
+    {key="nonhostile",label="Non-hostile"}, {key="undiscovered",label="Undiscovered"},
+    {key="unknown",label="Unknown attitude"},
+}}
+function albumFilters.Current()
+    local key=ML.db.options.albumCategory
+    for _,choice in ipairs(albumFilters.choices) do if choice.key==key then return key,choice.label end end
+    return "all","All entries"
+end
+local function AlbumMode()
+    return ML.db and (ML.db.options.mobView=="album" or albumInspecting==true)
+end
+local function AlbumActive()
+    return AlbumMode() and not albumInspecting
+end
+local function AlbumBookActive()
+    return AlbumMode() and albumInspecting==true
+end
 local rowHeight = 74
 local typeFilter, filterButton, filterMenu, filterCount = "all", nil, nil, nil
 local appearanceText, appearanceCounter, previousAppearance, nextAppearance
@@ -32,6 +53,35 @@ local collectionChoices = {
 }
 for _, rank in ipairs(ML.KillRanks) do
     collectionChoices[#collectionChoices + 1] = {key = rank.key, label = "|c" .. rank.hex .. rank.label .. "|r"}
+end
+local function UpdateMobPresentation()
+    local active=AlbumActive()
+    local book=AlbumBookActive()
+    listViewport:SetShown(not AlbumMode())
+    if not AlbumMode() then activeTab="info" end
+    if applyDetailLayout then applyDetailLayout(book,AlbumMode()) end
+    viewButtons.list:GetParent():SetShown(not book)
+    viewButtons.list.selectedMark:SetShown(not AlbumMode())
+    viewButtons.album.selectedMark:SetShown(AlbumMode())
+    for mode,button in pairs(viewButtons) do
+        local selectedMode=(mode=="album")==AlbumMode()
+        button.label:SetTextColor(unpack(selectedMode and gold or {0.63,0.57,0.47}))
+    end
+    if AlbumMode() then
+        if active and model.request then model.request=nil; model:ClearModel() end
+        for _,row in ipairs(rows) do row:Hide() end
+        for _,header in pairs(groupRows) do header:Hide() end
+        if attitudeMenu then attitudeMenu:Hide() end
+        window.empty:Hide()
+    end
+    if not active and album then album:Hide() end
+    if albumEntry then albumEntry.frame:SetShown(book) end
+    for _,widget in ipairs(albumFilters.widgets or {}) do widget:SetShown(not book) end
+    if albumFilters.button then
+        local _,label=albumFilters.Current()
+        albumFilters.button:SetText(label.."  v"); albumFilters.button:SetShown(active)
+        if not active then albumFilters.menu:Hide() end
+    end
 end
 function ML.SetCollectionFilter(key)
     local label
@@ -57,7 +107,8 @@ function ML.SetMobTypeFilter(key)
 end
 local function ApplyCamera()
     model:SetPortraitZoom(0)
-    model:SetCamDistanceScale(model.distance or defaultDistance)
+    local viewScale = AlbumBookActive() and 0.6 or 1
+    model:SetCamDistanceScale((model.distance or defaultDistance) * viewScale)
     model:SetPosition(0, model.panX or 0, model.panY or 0)
 end
 local function ModelRequestActive(request)
@@ -215,6 +266,8 @@ local function Details(mob, keepModel)
     if selected ~= mob.id then detailScroll:SetVerticalScroll(0) end
     selected = mob.id
     local collectionMob = group or mob
+    if AlbumBookActive() then albumEntry:SetMob(mob,group,album) end
+    if detailWidgets.more then detailWidgets.more:SetEnabled(true) end
     local nameGrouping = ML.db.nameGroups and ML.db.nameGroups[mob.name]
     local sameName = 0
     for _, entry in pairs(ML.db.mobs) do if entry.name == mob.name then sameName = sameName + 1 end end
@@ -239,6 +292,26 @@ local function Details(mob, keepModel)
     end
     if activeTab == "loot" then RenderLoot(mob); return end
     if activeTab == "characters" then RenderCharacters(mob); return end
+    if AlbumBookActive() then
+        local lines={"NPC #"..mob.id}
+        if mob.catalogOnly then
+            lines[#lines+1]="No personal encounters recorded."
+        else
+            lines[#lines+1]="Recorded kills: "..collectionMob.count
+            lines[#lines+1]="Sightings: "..(collectionMob.sightings or 0)
+            local progress=ML.CollectionProgress(collectionMob)
+            lines[#lines+1]=progress:gsub("|c%x%x%x%x%x%x%x%x",""):gsub("|r","")
+            for _,line in ipairs(ML.CollectionAchievementLines(collectionMob)) do
+                lines[#lines+1]=line:gsub("|c%x%x%x%x%x%x%x%x",""):gsub("|r","")
+            end
+            if count>1 then lines[#lines+1]=string.format("Selected variant: %d kills · %d NPC variants",mob.count,count) end
+            if (collectionMob.first or 0)>0 then lines[#lines+1]="First seen: "..date("%Y-%m-%d",collectionMob.first) end
+        end
+        local status=ML.NPCMetadataStatus(mob)
+        if status then lines[#lines+1]=status end
+        detail:SetText(table.concat(lines,"\n")); ShowLocationSections(mob)
+        return
+    end
     if mob.catalogOnly then
         local zones = {}
         for _, area in ipairs(ML.TrinityData.npcs[mob.id][5]) do zones[#zones+1] = ML.CatalogAreaName(area) end
@@ -295,6 +368,7 @@ local function StyleRow(row)
     end
 end
 local function RenderVisibleRows()
+    if AlbumMode() then return end
     if renderingRows or not window or not window:IsShown() or currentPage ~= "mobs" or not list or not content then return end
     renderingRows = true
     local scroll = list:GetVerticalScroll() or 0
@@ -452,6 +526,7 @@ function ML.RefreshNPCStatus(id)
         statusScheduled=false
         local dirty=statusDirty; statusDirty={}
         if not window:IsShown() or currentPage~="mobs" then return end
+        if AlbumActive() then ML.Refresh(true); return end
         for _,row in ipairs(rows) do
             local mob=row.mob
             if row:IsShown() and mob then
@@ -465,7 +540,7 @@ function ML.RefreshNPCStatus(id)
                 end
             end
         end
-        if selected and dirty[selected] and activeTab=="info" then
+        if selected and dirty[selected] and activeTab=="info" and not AlbumActive() then
             local mob=ML.GetMob(selected)
             if mob then Details(mob,true) end
         end
@@ -522,6 +597,28 @@ function ML.Refresh(background)
     if currentPage == "items" then ML.RefreshItems(); return end
     if currentPage == "session" then ML.RefreshSessionReport(); return end
     if currentPage == "areas" then ML.RefreshAreas(groups); return end
+    UpdateMobPresentation()
+    if AlbumBookActive() then
+        local mob=selected and ML.GetMob(selected)
+        if mob then Details(mob,true)
+        else albumInspecting=false; ML.Refresh(true) end
+        return
+    end
+    if AlbumActive() then
+        local category=albumFilters.Current()
+        if category~="all" then
+            local filtered={}
+            for _,mob in ipairs(mobs) do
+                if category~="undiscovered" and ML.DiscoveryCategory(mob)==category then filtered[#filtered+1]=mob end
+            end
+            mobs=filtered
+        end
+        local count=(category=="all" or category=="undiscovered") and ML.UndiscoveredCount(query,typeFilter,catalogArea,collectionFilter) or 0
+        local key=query..":"..typeFilter..":"..ML.AreaFilterKey(catalogArea)..":"..collectionFilter..":"..sortMode..":"..category
+        filterCount:SetText(string.format("%d / %d",#mobs+count,species+count))
+        album:Show(mobs,count,key,function() return ML.UndiscoveredIDs(query,typeFilter,catalogArea,collectionFilter) end,selected)
+        return
+    end
     local undiscovered={}
     local undiscoveredCount=ML.UndiscoveredCount(query,typeFilter,catalogArea,collectionFilter)
     if closedGroups.undiscovered==false then undiscovered=ML.UndiscoveredIDs(query,typeFilter,catalogArea,collectionFilter) end
@@ -643,6 +740,8 @@ function ML.OpenMob(id)
     local mob = ML.GetMob(id)
     if not mob then return end
     ML.PushView()
+    albumInspecting=true
+    if album then album.inspectedIndex=nil end
     activeTab = "info"
     local _, byID = ML.BuildMobGroups()
     for _, key in ipairs(ML.DiscoveryPath(byID[id] or mob)) do closedGroups[key] = false end
@@ -733,6 +832,7 @@ local function Build()
     end)
     search:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
     search:SetScript("OnEditFocusGained", function()
+        if albumFilters.menu then albumFilters.menu:Hide() end
         if filterMenu then filterMenu:Hide() end
         if collectionMenu then collectionMenu:Hide() end
     end)
@@ -773,7 +873,7 @@ local function Build()
     end)
     -- Clip nested portrait frames and rows at the list boundary, while keeping
     -- the native scrollbar inside the wider clipping container.
-    local listViewport = CreateFrame("Frame", nil, mobPage)
+    listViewport = CreateFrame("Frame", nil, mobPage)
     catalogAreaButton=ML.BuildAreaNavigation(mobPage,{Button=Button,Panel=Panel,Text=Text},26,-126,846,function(key)
         catalogArea=key; list:SetVerticalScroll(0); ML.Refresh()
     end)
@@ -785,7 +885,7 @@ local function Build()
     list:HookScript("OnVerticalScroll", RenderVisibleRows)
     list:HookScript("OnSizeChanged", RenderVisibleRows)
     window.empty = Text(mobPage, 14); window.empty:SetPoint("TOPLEFT", 40, -275); window.empty:SetWidth(310)
-    local preview = Panel(mobPage); preview:SetPoint("TOPLEFT", 410, -180); preview:SetSize(462, 190)
+    local preview = Panel(mobPage); preview:SetPoint("TOPLEFT", 410, -194); preview:SetSize(462, 232)
     preview:SetBackdropColor(0.65, 0.58, 0.46, 1)
     modelHint = Text(preview, 12); modelHint:SetPoint("BOTTOM", 0, 9)
     model = CreateFrame("PlayerModel", nil, preview)
@@ -887,11 +987,11 @@ local function Build()
     end)
     model:SetScript("OnHide", function(self) self.dragButton=nil; self:SetScript("OnUpdate",nil) end)
 
-    local detailPanel = Panel(mobPage); detailPanel:SetPoint("TOPLEFT", 410, -414); detailPanel:SetSize(462, 154)
+    local detailPanel = Panel(mobPage); detailPanel:SetPoint("TOPLEFT", 410, -470); detailPanel:SetSize(462, 98)
     local ds = CreateFrame("ScrollFrame", nil, mobPage, "UIPanelScrollFrameTemplate")
     ds:SetFrameLevel(detailPanel:GetFrameLevel() + 1)
     detailScroll = ds
-    ds:SetPoint("TOPLEFT", 424, -420); ds:SetSize(422, 140)
+    ds:SetPoint("TOPLEFT", 424, -476); ds:SetSize(422, 84)
     local dc = CreateFrame("Frame", nil, ds); dc:SetSize(420, 240); ds:SetScrollChild(dc)
     detail = Text(dc, 13); detail:SetPoint("TOPLEFT"); detail:SetWidth(412); detail:SetSpacing(4)
     detail:SetText("Select a mob from your collection.")
@@ -943,6 +1043,117 @@ local function Build()
         end)
         option:SetPoint("TOPLEFT", 9, -7 - (i - 1) * 26); option:SetHeight(25)
     end
+    detailWidgets={preview,detailPanel,ds,attitudeButton,nameGroupButton,tabs.info,tabs.loot,tabs.characters}
+    albumEntry=ML.BuildAlbumEntry(mobPage,{Text=Text,Button=Button},function()
+        local prior=history[#history]
+        if prior and prior.page=="mobs" and not prior.view.albumInspecting then
+            ML.GoBack()
+        else
+            ML.PushView(); albumInspecting=false; ML.Refresh(true)
+        end
+    end,function(step)
+        if not album then return end
+        local mob,index=album:Neighbor(step)
+        if mob then
+            ML.PushView(); album.inspectedIndex=index; selected=mob.representativeID or mob.id; activeTab="info"
+            detailScroll:SetVerticalScroll(0); ML.Refresh(true)
+        end
+    end)
+    albumFilters.button=Button(mobPage,"All entries  v",182,function()
+        filterMenu:Hide(); collectionMenu:Hide()
+        albumFilters.menu:SetShown(not albumFilters.menu:IsShown())
+    end)
+    albumFilters.button:SetPoint("TOPLEFT",680,-194); albumFilters.button:SetHeight(24)
+    albumFilters.menu=Panel(mobPage); albumFilters.menu:SetSize(200,#albumFilters.choices*26+14)
+    albumFilters.menu:SetPoint("TOPRIGHT",albumFilters.button,"BOTTOMRIGHT",0,-2)
+    albumFilters.menu:SetFrameLevel(window:GetFrameLevel()+60); albumFilters.menu:Hide()
+    albumFilters.button:HookScript("OnHide",function() albumFilters.menu:Hide() end)
+    for i,choice in ipairs(albumFilters.choices) do
+        local key=choice.key
+        local option=Button(albumFilters.menu,choice.label,182,function()
+            ML.PushView(); ML.db.options.albumCategory=key; albumFilters.menu:Hide(); ML.Refresh(true)
+        end)
+        option:SetPoint("TOPLEFT",9,-7-(i-1)*26); option:SetHeight(25)
+    end
+    detailWidgets.more=Button(mobPage,"More details",164,function()
+        if not selected or not ML.GetMob(selected) then return end
+        ML.PushView(); albumInspecting=true; activeTab="info"
+        if album then album.inspectedIndex=nil end
+        detailScroll:SetVerticalScroll(0); ML.Refresh(true)
+    end)
+    detailWidgets.more:SetPoint("TOPLEFT",708,-438); detailWidgets.more:SetEnabled(false)
+    albumFilters.widgets={search,hint,sortButton,filterButton,collectionButton,filterCount}
+    local listBackdrop=preview:GetBackdrop()
+    local lastBookLayout
+    applyDetailLayout=function(book,albumMode)
+        if lastBookLayout~=book then
+            lastBookLayout=book
+            model.request=nil
+            preview:ClearAllPoints(); ds:ClearAllPoints()
+            if book then
+                preview:SetPoint("TOPLEFT",albumEntry.frame,"TOPLEFT",12,-84); preview:SetSize(354,286)
+                model:ClearAllPoints(); model:SetPoint("TOPLEFT",6,-30); model:SetPoint("BOTTOMRIGHT",-6,25)
+                preview:SetBackdrop(nil); preview.opaqueBackground:Hide()
+                ds:SetPoint("TOPLEFT",albumEntry.frame,"TOPLEFT",406,-112); ds:SetSize(422,268)
+                appearanceBar:SetWidth(330); appearanceText:SetWidth(186)
+                preview:SetFrameLevel(albumEntry.frame:GetFrameLevel()+1)
+                model:SetFrameLevel(preview:GetFrameLevel()+1); appearanceBar:SetFrameLevel(model:GetFrameLevel()+1)
+                ds:SetFrameLevel(albumEntry.frame:GetFrameLevel()+2)
+            else
+                preview:SetPoint("TOPLEFT",410,-194); preview:SetSize(462,232)
+                model:ClearAllPoints(); model:SetPoint("TOPLEFT",6,-35); model:SetPoint("BOTTOMRIGHT",-6,31)
+                preview:SetBackdrop(listBackdrop); preview:SetBackdropColor(0.65,0.58,0.46,1); preview.opaqueBackground:Show()
+                ds:SetPoint("TOPLEFT",424,-476); ds:SetSize(422,84)
+                appearanceBar:SetWidth(438); appearanceText:SetWidth(300)
+            end
+            for index,name in ipairs({"info","loot","characters"}) do
+                local tab=tabs[name]; tab:ClearAllPoints(); tab:SetWidth(book and 140 or 286)
+                if book then tab:SetPoint("TOPLEFT",albumEntry.frame,"TOPLEFT",404+(index-1)*146,-72)
+                else tab:SetPoint("TOPLEFT",410,-438) end
+                tab:SetFrameLevel(albumEntry.frame:GetFrameLevel()+3)
+            end
+        end
+        local showDetails=not albumMode or book
+        preview:SetShown(showDetails); ds:SetShown(showDetails)
+        detailPanel:SetShown(not albumMode); attitudeButton:SetShown(not albumMode); nameGroupButton:SetShown(not albumMode)
+        for name,tab in pairs(tabs) do tab:SetShown(book or (not albumMode and name=="info")) end
+        detailWidgets.more:SetShown(not albumMode)
+        albumEntry.back:SetText(ML.db.options.mobView=="album" and "Back to album" or "Back to list")
+        albumEntry.contentShade:SetShown(book and activeTab~="info")
+        if book and activeTab=="info" then detail:SetTextColor(0.24,0.15,0.075); detail:SetShadowColor(0,0,0,0)
+        else detail:SetTextColor(0.92,0.87,0.76); detail:SetShadowColor(0,0,0,1) end
+        for _,label in ipairs({modelHint,controls,appearanceText,appearanceCounter}) do
+            if book then label:SetTextColor(0.34,0.22,0.11); label:SetShadowColor(0,0,0,0)
+            else label:SetTextColor(unpack(gold)); label:SetShadowColor(0,0,0,1) end
+        end
+    end
+    album=ML.BuildMobAlbum(mobPage,{Text=Text,Panel=Panel,Button=Button},function(mob)
+        ML.PushView(); albumInspecting=true; activeTab="info"
+        selected=mob.representativeID or mob.id
+        for _,key in ipairs(ML.DiscoveryPath(mob)) do closedGroups[key]=false end
+        if mob.catalogOnly then closedGroups.undiscovered=false end
+        ML.db.closedGroups=closedGroups
+        ML.Refresh(true)
+    end)
+    local viewSwitch=CreateFrame("Frame",nil,mobPage,"BackdropTemplate")
+    viewSwitch:SetPoint("TOPRIGHT",-28,-164); viewSwitch:SetSize(152,24)
+    viewSwitch:SetBackdrop({bgFile="Interface\\DialogFrame\\UI-DialogBox-Background-Dark",edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",edgeSize=10,insets={left=2,right=2,top=2,bottom=2}})
+    viewSwitch:SetBackdropColor(0.12,0.10,0.075,1); viewSwitch:SetBackdropBorderColor(0.53,0.43,0.28,1)
+    local viewLabel=Text(viewSwitch,10,{0.70,0.62,0.48})
+    viewLabel:SetPoint("RIGHT",viewSwitch,"LEFT",-10,0); viewLabel:SetText("VIEW")
+    for index,mode in ipairs({"list","album"}) do
+        local button=CreateFrame("Button",nil,viewSwitch)
+        button:SetSize(74,20); button:SetPoint("TOPLEFT",2+(index-1)*74,-2)
+        button.label=Text(button,11); button.label:SetPoint("CENTER"); button.label:SetText(mode=="list" and "List" or "Album")
+        button.selectedMark=button:CreateTexture(nil,"BACKGROUND")
+        button.selectedMark:SetAllPoints(); button.selectedMark:SetColorTexture(0.48,0.35,0.16,0.55)
+        button:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight","ADD")
+        button:SetScript("OnClick",function()
+            ML.PushView(); ML.db.options.mobView=mode; albumInspecting=false
+            ML.Refresh(true)
+        end)
+        viewButtons[mode]=button
+    end
     ML.BuildFooterNote(mobPage,Text,"Instances: loot-based records. Open world: observed deaths and loot.\nTracking is best effort. Hover for details.",
         "Instances: loot-based records. Open world: observed deaths and loot.\nRestricted WoW data can prevent recording. Participation does not prove a killing blow.")
     itemPage = ML.BuildItemBrowser(window, { Text = Text, Panel = Panel, Button = Button })
@@ -968,6 +1179,7 @@ function ML.ShowMob(id)
     ML.OpenMob(id)
 end
 function ML.Toggle()
+    if not window or not window:IsShown() then albumInspecting=false end
     ML.EnsureCatalog()
     if not window or not window:IsShown() then
         closedGroups = ML.DefaultClosedGroups()
@@ -988,6 +1200,8 @@ function ML.PushView()
     local state={page=currentPage}
     if currentPage=="mobs" then
         state.view={selected=selected,query=search:GetText(),type=typeFilter,rank=collectionFilter,area=catalogArea,
+            mobView=ML.db.options.mobView or "list",albumInspecting=albumInspecting,albumPage=album and album.page,
+            albumIndex=album and album.inspectedIndex,albumCategory=albumFilters.Current(),
             closed=ML.CopyViewTable(closedGroups),tab=activeTab,page=catalogPage,left=list:GetVerticalScroll(),right=detailScroll:GetVerticalScroll(),
             sort=ML.GetSortMode("mobs"),lootSort=ML.GetSortMode("mobLoot"),lootClosed=mobLoot and ML.CopyViewTable(mobLoot.closed),
             locationState=locationBrowser and {closed=ML.CopyViewTable(locationBrowser.closed),page=locationBrowser.page}}
@@ -1004,6 +1218,9 @@ function ML.GoBack()
     ML.SelectPage(state.page,true)
     if state.page=="mobs" then
         local view=state.view
+        ML.db.options.mobView=view.mobView or "list"; albumInspecting=view.albumInspecting
+        ML.db.options.albumCategory=view.albumCategory or "all"
+        if album then album.inspectedIndex=view.albumIndex end
         catalogArea=view.area or "all"; catalogAreaButton:SetSelection(catalogArea,false)
         ML.SetMobTypeFilter(view.type or "all"); ML.SetCollectionFilter(view.rank or "all")
         closedGroups=ML.CopyViewTable(view.closed); ML.db.closedGroups=closedGroups
@@ -1013,8 +1230,9 @@ function ML.GoBack()
         if locationBrowser and view.locationState then locationBrowser.closed=ML.CopyViewTable(view.locationState.closed) end
         search:SetText(view.query or ""); selected=view.selected
         ML.Refresh(); catalogPage=view.page or 1; ML.Refresh()
+        if album and AlbumActive() then album.page=view.albumPage or 1; ML.Refresh(true) end
         local mob=selected and ML.GetMob(selected)
-        if mob then
+        if mob and not AlbumActive() then
             Details(mob)
             if locationBrowser and activeTab=="info" and view.locationState then
                 locationBrowser.page=view.locationState.page or 1; locationBrowser:Show(mob,detail:GetStringHeight()+10)
@@ -1032,6 +1250,7 @@ end
 function ML.ResetCurrentFilters()
     ML.PushView()
     if currentPage=="mobs" then
+        ML.db.options.albumCategory="all"
         catalogArea="all"; catalogAreaButton:Reset(); search:SetText("")
         ML.SetMobTypeFilter("all"); ML.SetCollectionFilter("all"); list:SetVerticalScroll(0); ML.Refresh()
     elseif currentPage=="items" then ML.ResetItemsFilters()
@@ -1048,6 +1267,13 @@ end
 
 function ML.IsMobLogVisible() return window and window:IsShown() end
 function ML.RefreshCatalogStatus()
+    if album and AlbumActive() and album.frame:IsShown() then
+        local status=ML.CatalogUnavailableText()
+        if status then
+            album.subheading:SetText(status)
+            if album.empty:IsShown() then album.empty:SetText(status) end
+        end
+    end
     local header=groupRows.catalogUnavailable
     if header and header:IsVisible() then header.label:SetText(ML.CatalogUnavailableText() or "Catalog ready") end
     if ML.RefreshItemCatalogStatus then ML.RefreshItemCatalogStatus() end

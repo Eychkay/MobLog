@@ -2,7 +2,7 @@
 
 Copyright (C) 2026 MobLog contributors.
 
-MobLog 1.1.3's original addon source, build scripts, documentation and original
+MobLog 1.1.4's original addon source, build scripts, documentation and original
 packaged artwork are distributed under the GNU General Public License, version 2
 or (at your option) any later version: **GPL-2.0-or-later**. See `LICENSE` for the
 complete license. You may redistribute and modify this work under those terms.

@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: MobLog Catalog (Forever)
 ## Notes: Read-only creature and possible loot catalog for Forever.
-## Version: 1.1.3
+## Version: 1.1.4
 ## X-License: GPL-2.0-or-later
 ## Dependencies: MobLog
 ## LoadOnDemand: 1

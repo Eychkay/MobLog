@@ -142,17 +142,20 @@ end
 
 function ML.PortraitAtlas(mob)
     if mob.boss or mob.classification == "worldboss" then
-        return "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged", true
+        return "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold-Winged", true, ML.IsForever and 37 or 34, ML.IsForever and 15 or 11
+    elseif ML.IsForever and (mob.classification == "rare" or mob.classification == "rareelite") then
+        return "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Rare-Silver-Winged", true, 34, 12
     elseif mob.classification == "rareelite" then
-        return "ui-hud-unitframe-target-portraiton-boss-rare-silver", false
+        return "ui-hud-unitframe-target-portraiton-boss-rare-silver", false, 15, 11
     elseif mob.classification == "elite" then
-        return "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold", false
+        return "UI-HUD-UnitFrame-Target-PortraitOn-Boss-Gold", false, ML.IsForever and 26 or 15, ML.IsForever and 20 or 11
     end
 end
 
 function ML.CreateMobPortrait(parent, size)
     local portrait = CreateFrame("Frame", nil, parent)
     portrait:SetSize(size, size)
+    portrait.layoutSize=size
     portrait.icon = portrait:CreateTexture(nil, "ARTWORK"); portrait.icon:SetAllPoints()
     portrait.mask = portrait:CreateMaskTexture()
     portrait.mask:SetAtlas("CircleMask"); portrait.mask:SetAllPoints(portrait.icon)
@@ -175,6 +178,34 @@ function ML.CreateMobPortrait(parent, size)
     return portrait
 end
 
+function ML.LayoutMobPortrait(portrait,info,offsetX,offsetY)
+    if not portrait.maxFrameWidth then return end
+    -- Blizzard anchors the ornament to the target frame, whose portrait sits
+    -- 26 px from the right and 19 px below the top. Convert those anchors to
+    -- portrait coordinates, then fit the complete image and ornament together.
+    local dx,dy=info and offsetX or 0,info and offsetY or 0
+    local left,top,right,bottom=-2,-2,60,60
+    if info then
+        left=math.min(left,58+dx-info.width); right=math.max(right,58+dx)
+        top=math.min(top,-dy); bottom=math.max(bottom,info.height-dy)
+    end
+    local size=portrait.layoutSize or portrait:GetWidth()
+    local scale=math.min(size/58,portrait.maxFrameWidth/(right-left),portrait.maxFrameHeight/(bottom-top))
+    local x=size/2-(left+right)*scale/2
+    local y=size/2-(top+bottom)*scale/2
+    portrait.icon:ClearAllPoints(); portrait.icon:SetPoint("TOPLEFT",portrait,"TOPLEFT",x,-y)
+    portrait.icon:SetSize(58*scale,58*scale)
+    portrait.ring:ClearAllPoints(); portrait.ring:SetPoint("CENTER",portrait.icon,"CENTER")
+    portrait.ring:SetSize(62*scale,62*scale)
+    portrait.star:ClearAllPoints(); portrait.star:SetPoint("BOTTOMLEFT",portrait.icon,"BOTTOMLEFT",-3*scale,-3*scale)
+    portrait.star:SetSize(12*scale,12*scale)
+    if info then
+        portrait.dragon:SetSize(info.width*scale,info.height*scale)
+        portrait.dragon:ClearAllPoints()
+        portrait.dragon:SetPoint("TOPRIGHT",portrait.icon,"TOPRIGHT",dx*scale,dy*scale)
+    end
+end
+
 function ML.UpdateMobPortrait(portrait, mob)
     local displayID = ML.SelectedDisplay(mob)
     if portrait.mobID ~= mob.id or portrait.displayID ~= displayID then
@@ -188,7 +219,7 @@ function ML.UpdateMobPortrait(portrait, mob)
     local rare = mob.classification == "rare" or mob.classification == "rareelite"
     portrait.star:SetShown(rare)
     portrait.ring:SetVertexColor(rare and 0.72 or 0.82, rare and 0.75 or 0.66, rare and 0.8 or 0.37)
-    local atlas, winged = ML.PortraitAtlas(mob)
+    local atlas, winged, offsetX, offsetY = ML.PortraitAtlas(mob)
     local info = atlas and C_Texture and C_Texture.GetAtlasInfo(atlas)
     portrait.dragon:SetShown(info ~= nil and info ~= false)
     if info then
@@ -196,6 +227,7 @@ function ML.UpdateMobPortrait(portrait, mob)
         portrait.dragon:SetAtlas(atlas)
         portrait.dragon:SetSize(info.width * scale, info.height * scale)
         portrait.dragon:ClearAllPoints()
-        portrait.dragon:SetPoint("TOPRIGHT", portrait, "TOPRIGHT", (winged and 34 or 15) * scale, 11 * scale)
+        portrait.dragon:SetPoint("TOPRIGHT", portrait, "TOPRIGHT", offsetX * scale, offsetY * scale)
     end
+    ML.LayoutMobPortrait(portrait,info,offsetX,offsetY)
 end

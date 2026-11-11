@@ -6,14 +6,27 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.2.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.4.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
-These are the only two addon folders required. No external addon or library is
+For Forever, install **MobLog** and **MobLog_ForeverDB** from
+**MobLog-1.1.4-Forever.zip** into `_forever_/Interface/AddOns/`.
+Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
 Open with /moblog, /ml or the minimap button. The Mobs, Items, Session and Areas
 pages offer search, sorting, account-wide character breakdowns, class colors,
 interactive model previews and navigation between creatures and observed items.
+
+## Bestiary album
+
+Switch between List and Album in the Mobs page. Album cards show known names
+for undiscovered creatures and support Hostile, Non-hostile, Undiscovered and
+Unknown attitude filters alongside search, area, type and collection rank.
+Open a card to inspect the creature on a parchment double-page spread, with
+interactive 3D models, loot and character records. Previous and Next browse
+the filtered album. The list offers a larger model preview, Details & Places
+and More details to open the same double-page view. Back to list restores
+your selection, filters and scroll position.
 
 ## Locations
 
@@ -98,3 +111,5 @@ Each client selects its own catalog; records remain in that client's saved data.
 The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
+
+Current release: [Changelog](publishing/changelog-1.1.4.md) · [Release notes](publishing/release-notes-1.1.4.md).

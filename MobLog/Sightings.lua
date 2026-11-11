@@ -209,10 +209,16 @@ function ML.RecordSighting(guid, data, unit)
     return true
 end
 
+function ML.DiscoveryCategory(mob)
+    local reaction = mob.reaction
+    if reaction == "friendly" or reaction == "neutral" then return "nonhostile" end
+    return reaction == "hostile" and "hostile" or "unknown"
+end
+
 function ML.DiscoveryPath(mob)
-    local reaction = mob.reaction or "unknown"
+    local reaction = ML.DiscoveryCategory(mob)
     if reaction == "hostile" then return { reaction, "hostile:" .. (mob.count > 0 and "killed" or "seen") } end
-    if reaction == "friendly" or reaction == "neutral" then return { "nonhostile" } end
+    if reaction == "nonhostile" then return { "nonhostile" } end
     return { reaction }
 end
 
@@ -230,7 +236,7 @@ function ML.DiscoveryLayout(mobs, closed)
     local buckets = { hunts = {}, nonhostile = {}, hostile = {}, unknown = {} }
     for _, mob in ipairs(mobs) do
         local key = ML.IsHuntTarget and ML.IsHuntTarget(mob) and "hunts" or
-            ((mob.reaction == "friendly" or mob.reaction == "neutral") and "nonhostile" or (buckets[mob.reaction] and mob.reaction or "unknown"))
+            ML.DiscoveryCategory(mob)
         buckets[key][#buckets[key] + 1] = mob
     end
     local layout, offset = {}, 0
