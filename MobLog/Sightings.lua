@@ -193,6 +193,7 @@ function ML.RecordSighting(guid, data, unit)
     -- Repeated unit events in one second must not continuously reshuffle rows.
     if seenChanged then ML.StampActivity(mob, "lastSeen", now) end
     mob.last = now
+    if ML.DiscoveryChanged then ML.DiscoveryChanged(mob) end
     if mob.count == 0 and seenChanged then changed = true end
     local character = ML.UpdateCharacter() or "unknown"
     local seen = ML.db.sightingSeen[guid]

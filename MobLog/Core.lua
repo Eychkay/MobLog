@@ -174,6 +174,7 @@ function ML.Record(guid, source, observed, deferRefresh)
     if ML.ApplyCatalogMetadata then ML.ApplyCatalogMetadata(mob) end
     if ML.ApplyDiscoveredAppearances then ML.ApplyDiscoveredAppearances(mob) end
     mob.count = mob.count + 1
+    if ML.DiscoveryChanged then ML.DiscoveryChanged(mob, true) end
     mob[source] = (mob[source] or 0) + 1
     mob.last = now
     ML.StampActivity(mob, "lastKilled", now)
@@ -240,6 +241,7 @@ frame:SetScript("OnEvent", function(_, event, name)
         for id, mob in pairs(ML.db.mobs) do
             if mob.name == "Unbekannter Mob #" .. id then mob.name = "Unknown mob #" .. id end
         end
+        if ML.InitializeDiscoveries then ML.InitializeDiscoveries() end
         ML.QueueUnknownNames()
         -- Bound dedup history; a corpse cannot normally survive seven days.
         for guid, stamp in pairs(ML.db.seen) do

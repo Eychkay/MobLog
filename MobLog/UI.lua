@@ -180,10 +180,10 @@ local function Button(parent, label, width, callback)
     return b
 end
 local unlockToast, unlockQueue
-function ML.ShowRankUnlock(mob, rank)
+local function ShowUnlock(title, description, color)
     unlockQueue = unlockQueue or {}
     -- Keep notifications bounded during mass looting.
-    if #unlockQueue < 8 then unlockQueue[#unlockQueue + 1] = {name = mob.name, rank = rank} end
+    if #unlockQueue < 8 then unlockQueue[#unlockQueue + 1] = {title=title, description=description, color=color} end
     if not unlockToast then
         unlockToast = Panel(UIParent)
         unlockToast:SetSize(360, 78); unlockToast:SetPoint("TOP", 0, -145)
@@ -196,10 +196,9 @@ function ML.ShowRankUnlock(mob, rank)
                 local nextUnlock = table.remove(unlockQueue, 1)
                 if not nextUnlock then self:Hide(); return end
                 self.elapsed = 0
-                local tier = nextUnlock.rank
-                self:SetBackdropBorderColor(unpack(tier.color))
-                self.title:SetText("|c" .. tier.hex .. tier.label .. " rank unlocked!|r")
-                self.name:SetText(nextUnlock.name .. " · " .. tier.kills .. " recorded kills")
+                self:SetBackdropBorderColor(unpack(nextUnlock.color))
+                self.title:SetText(nextUnlock.title)
+                self.name:SetText(nextUnlock.description)
             end
             self.elapsed = self.elapsed + elapsed
             self:SetAlpha(math.max(0, math.min(1, self.elapsed / 0.25, (3.5 - self.elapsed) / 0.5)))
@@ -208,6 +207,12 @@ function ML.ShowRankUnlock(mob, rank)
         unlockToast:Hide()
     end
     if not unlockToast:IsShown() then unlockToast:SetAlpha(0); unlockToast:Show() end
+end
+function ML.ShowRankUnlock(mob, rank)
+    ShowUnlock("|c"..rank.hex..rank.label.." rank unlocked!|r", mob.name.." · "..rank.kills.." recorded kills", rank.color)
+end
+function ML.ShowDiscoveryUnlock(badge)
+    ShowUnlock("|cffeac273"..badge.name.." · "..badge.goal.."|r", badge.description, gold)
 end
 local function PlaceLabel(p)
     local label = p.zone
@@ -597,6 +602,7 @@ function ML.Refresh(background)
     if currentPage == "items" then ML.RefreshItems(); return end
     if currentPage == "session" then ML.RefreshSessionReport(); return end
     if currentPage == "areas" then ML.RefreshAreas(groups); return end
+    if currentPage == "discoveries" then ML.RefreshDiscoveries(); return end
     UpdateMobPresentation()
     if AlbumBookActive() then
         local mob=selected and ML.GetMob(selected)
@@ -733,6 +739,7 @@ function ML.SelectPage(name,skipHistory)
     ML.UpdateNavigationButtons()
     mobPage:SetShown(name == "mobs"); itemPage:SetShown(name == "items"); sessionPage:SetShown(name == "session")
     areaPage:SetShown(name == "areas")
+    window.discoveryPage:SetShown(name == "discoveries")
     for key, tab in pairs(pageTabs) do tab.selectedMark:SetShown(key == name) end
     ML.Refresh()
 end
@@ -1159,9 +1166,10 @@ local function Build()
     itemPage = ML.BuildItemBrowser(window, { Text = Text, Panel = Panel, Button = Button })
     sessionPage = ML.BuildSessionReport(window, { Text = Text, Panel = Panel, Button = Button })
     areaPage = ML.BuildAreas(window, { Text = Text, Panel = Panel, Button = Button })
-    for i, name in ipairs({ "mobs", "items", "session", "areas" }) do
-        local tab = Button(window, ({mobs = "Mobs", items = "Items", session = "Session", areas = "Areas"})[name], 90, function() ML.SelectPage(name) end)
-        tab:SetPoint("TOP", (i - 2.5) * 100, -18)
+    window.discoveryPage = ML.BuildDiscoveries(window, { Text = Text, Panel = Panel, Button = Button })
+    for i, name in ipairs({ "mobs", "items", "session", "areas", "discoveries" }) do
+        local tab = Button(window, ({mobs = "Mobs", items = "Items", session = "Session", areas = "Areas", discoveries = "Discoveries"})[name], 96, function() ML.SelectPage(name) end)
+        tab:SetPoint("TOP", (i - 3) * 102, -18)
         pageTabs[name] = tab
     end
     pageTabs.mobs.selectedMark:Show()
@@ -1193,7 +1201,7 @@ end
 function ML.UpdateNavigationButtons()
     if not backButton then return end
     backButton:SetEnabled(#history>0)
-    resetFiltersButton:SetEnabled(currentPage~="session"); currentAreaButton:SetEnabled(currentPage~="session")
+    resetFiltersButton:SetEnabled(currentPage~="session" and currentPage~="discoveries"); currentAreaButton:SetEnabled(currentPage~="session" and currentPage~="discoveries")
 end
 function ML.PushView()
     if restoringView or not window or not window:IsShown() then return end
@@ -1207,6 +1215,7 @@ function ML.PushView()
             locationState=locationBrowser and {closed=ML.CopyViewTable(locationBrowser.closed),page=locationBrowser.page}}
     elseif currentPage=="items" then state.view=ML.GetItemsView()
     elseif currentPage=="areas" then state.view=ML.GetAreasView()
+    elseif currentPage=="discoveries" then state.view=ML.GetDiscoveriesView()
     else state.view=ML.GetSessionView() end
     if #history>=20 then table.remove(history,1) end
     history[#history+1]=state; ML.UpdateNavigationButtons()
@@ -1241,6 +1250,7 @@ function ML.GoBack()
         ML.SetViewScroll(list,view.left); ML.SetViewScroll(detailScroll,view.right)
     elseif state.page=="items" then ML.RestoreItemsView(state.view)
     elseif state.page=="areas" then ML.RestoreAreasView(state.view)
+    elseif state.page=="discoveries" then ML.RestoreDiscoveriesView(state.view)
     else ML.RestoreSessionView(state.view) end
     ML.UpdateSortLabels(); restoringView=false; ML.UpdateNavigationButtons()
 end

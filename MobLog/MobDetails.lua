@@ -9,6 +9,7 @@ local classifications = {
 function ML.ReadMobDetails(unit)
     local reaction = ML.Public(UnitReaction(unit, "player"))
     return {
+        creatureType = UnitCreatureType and ML.Public(UnitCreatureType(unit)) or nil,
         classification = ML.Public(UnitClassification(unit)),
         boss = ML.Public(UnitIsBossMob(unit)),
         level = ML.Public(UnitLevel(unit)),
@@ -19,7 +20,7 @@ end
 function ML.ApplyMobDetails(mob, data)
     if not data then return end
     local changed = false
-    for _, field in ipairs({ "classification", "boss", "level" }) do
+    for _, field in ipairs({ "classification", "boss", "level", "creatureType" }) do
         if data[field] ~= nil and data[field] ~= mob[field] then
             mob[field] = data[field]; changed = true
         end
@@ -29,6 +30,7 @@ function ML.ApplyMobDetails(mob, data)
         local effective = mob.reactionOverride or data.reaction
         if mob.reaction ~= effective then mob.reaction = effective; changed = true end
     end
+    if changed and ML.DiscoveryChanged then ML.DiscoveryChanged(mob) end
     return changed
 end
 

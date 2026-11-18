@@ -6,10 +6,10 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.4.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.5.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 For Forever, install **MobLog** and **MobLog_ForeverDB** from
-**MobLog-1.1.4-Forever.zip** into `_forever_/Interface/AddOns/`.
+**MobLog-1.1.5-Forever.zip** into `_forever_/Interface/AddOns/`.
 Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
@@ -27,6 +27,53 @@ interactive 3D models, loot and character records. Previous and Next browse
 the filtered album. The list offers a larger model preview, Details & Places
 and More details to open the same double-page view. Back to list restores
 your selection, filters and scroll position.
+
+## Discovery seals
+
+Discovery goals are selected automatically for the current client: 410 seals in
+Retail and 259 in Forever, across 29 series (plus any previously earned retired
+goals). Distinct-NPC goals use the matching catalog population with a 20 percent
+balancing margin, rounded down to a supported milestone. This is not proof that
+every listed NPC is currently available. Retail uses the Trinity TDB1210.26091
+population; Forever uses the incomplete pinned ATT Camelot references.
+
+| Distinct discoveries | Retail maximum | Forever maximum |
+|---|---:|---:|
+| All NPCs | 50,000 | 2,500 |
+| Beasts | 5,000 | 250 |
+| Humanoids | 5,000 | 2,500 |
+| Undead | 5,000 | 150 |
+| Demons | 3,500 | 75 |
+| Dragonkin | 3,500 | 50 |
+| Elementals | 5,000 | 100 |
+| Giants | 750 | 20 |
+| Mechanicals | 5,000 | 20 |
+| Aberrations | 3,500 | 20 |
+| Critters | 2,500 | 3 |
+
+Rare and elite discovery goals use their recorded classification populations.
+Boss and attitude populations are not complete in these sources: those series
+use broader client-scaled goals rather than claiming a verified subtype count.
+Repeatable combat series remain at up to 2,500,000 total recorded kills and
+100,000 kills per creature type. Recorded kills do not guarantee personal killing
+blows. Each original NPC ID counts once for distinct discoveries, independently
+of visual grouping and kill ranks. Catalog-only entries, provisional placeholders
+and manual attitude overrides do not grant discovery credit.
+
+Use dropdown filters for collection, creature types, encounters or combat and
+for earned or in-progress seals. Fifty reusable cards are displayed per page.
+Previously earned goals retired by new limits remain visible as earlier goals;
+unearned retired goals disappear. Saved awards and their dates are preserved.
+
+Regenerate the population snapshot after updating either catalog with
+`python tools/trinity/build_discovery_limits.py`. It writes the small shared
+`DiscoveryLimits.lua` file, so the addon need not load a catalog to select goals.
+
+Existing personal records are credited silently as "From previous records".
+Creature seals require a readable creature type; missing types can be filled by
+later encounters or readable metadata. Newly earned seals record the date,
+character and completing NPC. Click those seals to open the encounter.
+Discovery notifications can be disabled directly on the Discoveries page.
 
 ## Locations
 
@@ -112,4 +159,4 @@ The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
 
-Current release: [Changelog](publishing/changelog-1.1.4.md) · [Release notes](publishing/release-notes-1.1.4.md).
+Current release: [Changelog](publishing/changelog-1.1.5.md) · [Release notes](publishing/release-notes-1.1.5.md).

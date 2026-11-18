@@ -15,6 +15,7 @@
 !/tools/trinity/
 /tools/trinity/*
 !/tools/trinity/import_catalog.py
+!/tools/trinity/build_discovery_limits.py
 !/tools/att/
 !/tools/forever/
 /tools/forever/*
@@ -30,6 +31,9 @@
 !/publishing/MobLog-logo-400.png
 __pycache__/
 *.pyc
+!/tests/
+/tests/*
+!/tests/test_discoveries.py
 !/publishing/changelog-1.1.2.md
 !/publishing/release-notes-1.1.2.md
 !/publishing/changelog-1.1.3.md
@@ -37,3 +41,6 @@ __pycache__/
 
 !/publishing/changelog-1.1.4.md
 !/publishing/release-notes-1.1.4.md
+
+!/publishing/changelog-1.1.5.md
+!/publishing/release-notes-1.1.5.md

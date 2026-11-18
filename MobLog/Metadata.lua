@@ -264,6 +264,7 @@ function ML.ApplyNPCMetadata(id, details)
         if not mob.reactionOverride and ML.MissingNPCField(mob.reaction) then mob.reaction = details.reaction end
         changed = true
     end
+    if changed and ML.DiscoveryChanged then ML.DiscoveryChanged(mob) end
     return changed
 end
 
