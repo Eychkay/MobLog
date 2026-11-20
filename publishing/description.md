@@ -2,7 +2,7 @@
 
 Every creature has a story. Keep a record of the ones you encounter.
 
-MobLog builds an account-wide bestiary as you explore, bringing together NPC sightings, kill records, creature models, personal loot history, wishlists and discovery locations in one place. A bundled catalog helps you explore creatures and possible drops you have not recorded yet.
+MobLog builds an account-wide bestiary as you explore, bringing together NPC sightings, kill records, creature models, personal loot history, wishlists, personal notes and map pins in one place. A bundled catalog helps you explore creatures and possible drops you have not recorded yet.
 
 ## Discover and collect
 
@@ -11,6 +11,12 @@ Track hostile creatures alongside friendly and neutral NPCs. Separate **Killed**
 Browse **Undiscovered** creatures alongside your recorded encounters. Catalog browsing never marks an NPC as seen or killed, and catalog entries may include older, unused or conditional variants.
 
 Search by name, NPC ID or location, filter by classifications such as **Rare, Elite and Boss**, and narrow Mobs and Items through matching **world → region → area** dropdowns. Choose **Recent**, **Most kills**, **Most dropped** or **Alphabetical A–Z / Z–A** where applicable.
+
+## Browse your bestiary album
+
+Switch between **List** and **Album** on the Mobs tab. Filter album cards by **Hostile**, **Non-hostile**, **Undiscovered** or **Unknown attitude**. Known creature names are visible on undiscovered cards.
+
+Open a card to see the creature on a parchment double-page spread, with its interactive 3D model, loot, character records and locations. Use **Previous** and **Next** to browse the filtered album. **More details** opens the same spread from the list, and **Back to list** restores your selection, filters and scroll position.
 
 ## Turn encounters into milestones
 
@@ -23,7 +29,11 @@ Grow your collection with **account-wide kill ranks** for each grouped bestiary 
 
 Unlock colored frames, rank badges and decorative details, follow your progress toward the next rank, and celebrate new milestones with a rank-up notification. **Your existing kill records already count.**
 
-Filter your collection by rank and check the summary to see how many entries have reached each tier. Each entry counts once at its highest current rank.
+Filter your collection by rank and check the summary to see how many entries have reached each tier. Each entry counts once at its highest current rank. Newly earned ranks also save the date, visible on the creature entry and in its list tooltip.
+
+The **Discoveries** tab adds account-wide seals across 29 series, with **410 seals in Retail** and **259 in Forever**. Earn them by discovering distinct NPCs, encountering rares, elites and bosses, or recording kills overall and by creature type. The journal shows your next goals and offers dropdowns for category and completion.
+
+Your existing records count toward seals. Newly earned seals can show the date, character and NPC involved. Click a linked seal to open that creature's entry, and toggle seal notifications from the Discoveries tab.
 
 ## Keep your hunts in view
 
@@ -85,7 +95,7 @@ NPCs with the same name and a shared discovered appearance are grouped into one 
 
 Each original NPC variant has separate **Observed drops** and **Not observed drops** sections. See recorded quantities and **personal drop percentages** for your observations, alongside additional possibilities from the catalog.
 
-The bundled catalog contains **31,375 item IDs linked to possible creature sources**. Catalog coverage is incomplete: a missing item or source does not mean a creature has no other drops. Availability can depend on difficulty, faction, character, game version or other conditions. Known loot contexts appear in tooltips; they are not exhaustive eligibility checks.
+Each client uses its own bundled creature and loot catalog. The Retail catalog contains **31,375 item IDs linked to possible creature sources**. The Forever catalog uses separate creature, loot and location references. Catalog coverage is incomplete: a missing item or source does not mean a creature has no other drops. Availability can depend on difficulty, faction, character, game version or other conditions. Known loot contexts appear in tooltips; they are not exhaustive eligibility checks.
 
 Open **Items** to search by name or ID, filter by rarity using **color-coded options**, and browse by area. Compare **Observed sources**, with your personal percentages, against **Possible sources** where you have not recorded the item yet. Click a creature to jump directly to its bestiary entry.
 
@@ -101,14 +111,28 @@ Your wishlist stays under your control: observing a drop does not remove an item
 
 Use **Back**, **Reset filters** and **Current area** in the footer to move between creatures, items and areas. Back restores your recent views, including filters, selections and scroll positions.
 
+## Leave yourself a note
+
+Use **Add note** in the creature details to save a personal reminder for that NPC variant, even if you have only found it in the catalog. The first line appears in the creature details. Open **Notes** to edit the full text.
+
+On the world map, **Shift + right-click** to add a note at your cursor. The dropdown lets you link a creature using your current target, a name search or an NPC ID. Linking is optional.
+
+- **Left-click** a linked gold **!** marker to open its bestiary entry.
+- **Right-click** a marker to edit the note or change its creature link.
+- **Shift + right-click** a marker to remove it.
+
+Linked map notes also appear under **Details & Places → Personal map marks** in the creature entry.
+
 ## Remember where—and with whom
+
+Creature-list subtitles distinguish **Seen in** (your latest personal encounter area) from **Found in** (a known habitat). Mobs and Items can filter **All locations**, **Your encounters** or **Known habitats** before you choose a world, region and area.
 
 Creature pages clearly separate **Your discoveries** from **Known locations**:
 
-* **Your discoveries** are saved at your character's position when a sighting or kill was recorded.
-* **Known locations** are available catalog spawn positions, shown separately and loaded only when needed. They never count as personal sightings, kills or discoveries.
+*   **Your discoveries** are saved at your character's position when a sighting or kill was recorded.
+*   **Known locations** are available catalog spawn positions, shown separately and loaded only when needed. They never count as personal sightings, kills or discoveries.
 
-Click supported, verified locations to open the world map and place a waypoint. Unavailable coordinates and ambiguous floors are not guessed. Catalog positions may be incomplete, conditional or associated with moving creatures; they do not guarantee that an NPC is currently present.
+Click supported locations to open the world map. Verified coordinates can also place a waypoint. Some dungeon locations open the map without marking an exact floor or spawn. Unavailable coordinates and ambiguous floors are not guessed. Catalog positions may be incomplete, conditional or associated with moving creatures; they do not guarantee that an NPC is currently present.
 
 Your collection, wishlist and hunt targets are shared across characters using the same addon database. A character breakdown shows who recorded sightings and kills, with character names displayed in their **class colors**.
 
@@ -118,7 +142,6 @@ Your collection, wishlist and hunt targets are shared across characters using th
 *   Collapsible creature groups, quick search and combined filters.
 *   On-demand list rendering, cached views and portrait loading for larger collections.
 *   Optional background catalog preparation after login, enabled by default and paused in combat.
-*   Manually started item indexing can continue with the window closed; unresolved items are reported explicitly.
 *   Minimap button for easy access.
 *   Optional **target-only sightings** to help reduce CPU usage and micro-stutters in crowded cities; disabled by default.
 *   Optional automatic target-only sightings in supported capital cities and major hubs; disabled by default.
@@ -127,7 +150,12 @@ Your collection, wishlist and hunt targets are shared across characters using th
 
 Open **Options → AddOns → MobLog** to configure the addon.
 
-Install **both MobLog and MobLog_TrinityDB** from the release ZIP and restart WoW after updating. No additional data modules or external tracking addons are required.
+## Install for your client
+
+- **World of Warcraft Retail:** Extract both `MobLog` and `MobLog_TrinityDB` from `MobLog-1.1.6.zip` into `_retail_/Interface/AddOns/`.
+- **World of Warcraft Forever:** Extract both `MobLog` and `MobLog_ForeverDB` from `MobLog-1.1.6-Forever.zip` into `_forever_/Interface/AddOns/`.
+
+Fully restart WoW after installing or updating. Your existing records and preferences are preserved within each client.
 
 ### Quick commands
 
@@ -139,7 +167,7 @@ Install **both MobLog and MobLog_TrinityDB** from the release ZIP and restart Wo
 
 Your personal collection grows only through recorded encounters. The separate catalog supplies additional creature, loot and location information; it does not create personal progress and is not a complete creature or loot database.
 
-**In the open world**, death tracking is best effort under Midnight’s API restrictions. It uses readable unit observations, with loot-based recording and manual confirmation as additional recording methods. Some kills may be missed, and recorded deaths do not prove a personal killing blow. **Inside dungeons and raids, tracking is loot-based only.**
+**In the open world**, death tracking is best effort within the game client’s API limits. It uses readable unit observations, with loot-based recording and manual confirmation as additional recording methods. Some kills may be missed, and recorded deaths do not prove a personal killing blow. **Inside dungeons and raids, tracking is loot-based only.**
 
 Loot history reflects items exposed by the loot window, rather than confirmed receipt in your bags. Drop percentages are calculated from your recorded samples and are **not official drop rates**. In instances, creatures you do not loot are not included in those samples.
 
@@ -147,17 +175,6 @@ Loot history reflects items exposed by the loot window, rather than confirmed re
 
 ## Open source
 
-MobLog is distributed under **GNU GPL version 2 or later (GPL-2.0-or-later)**, with third-party license and attribution notices retained in the package.
+MobLog is distributed under **GNU GPL version 2 or later (GPL-2.0-or-later)**, with third-party license and attribution notices retained in the package. **Source code:** [GitHub](https://github.com/Eychkay/MobLog)
 
-_Designed for World of Warcraft Retail / Midnight. English interface; available creature, item and location names follow your game client's language, with catalog fallbacks where needed._
-
-
-## Personal areas and known habitats
-
-Creature-list subtitles distinguish **Seen in** (your latest personal area) from
-**Found in** (known catalog habitats when you have no personal area). Hover an
-entry to compare Your encounters and Known habitats. The Mobs and Items area
-navigation lets you select **All locations**, **Your encounters** or **Known
-habitats** before choosing a world, region and area. Catalog habitats never create
-personal progress. Supported dungeon locations can open their map even without
-an exact spawn pin; unverified floors and coordinates remain unmarked.
+_Available for World of Warcraft Retail and World of Warcraft Forever. English interface; available creature, item and location names follow your game client's language, with catalog fallbacks where needed._
