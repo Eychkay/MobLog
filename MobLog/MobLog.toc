@@ -2,7 +2,7 @@
 ## Title: MobLog
 ## Notes: Your account-wide bestiary. Models, drops, characters and map locations.
 ## Author: MobLog
-## Version: 1.1.5
+## Version: 1.1.6
 ## X-License: GPL-2.0-or-later
 ## IconTexture: Interface\AddOns\MobLog\Media\Logo
 ## SavedVariables: MobLogDB
@@ -35,6 +35,8 @@ ItemCatalog.lua
 ItemBrowser.lua
 MobLoot.lua
 Portraits.lua
+Notes.lua
+MapNotes.lua
 Album.lua
 UI.lua
 Minimap.lua

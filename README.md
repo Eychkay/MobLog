@@ -6,10 +6,10 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.5.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.6.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 For Forever, install **MobLog** and **MobLog_ForeverDB** from
-**MobLog-1.1.5-Forever.zip** into `_forever_/Interface/AddOns/`.
+**MobLog-1.1.6-Forever.zip** into `_forever_/Interface/AddOns/`.
 Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
@@ -74,6 +74,17 @@ Creature seals require a readable creature type; missing types can be filled by
 later encounters or readable metadata. Newly earned seals record the date,
 character and completing NPC. Click those seals to open the encounter.
 Discovery notifications can be disabled directly on the Discoveries page.
+
+## Personal notes and map notes
+
+Use **Add note** in the creature details from the list or album to save a private
+note for that NPC ID. Save an empty note to remove it.
+
+On the world map, **Shift + right-click** to write a note at the clicked location.
+The creature dropdown supports name or NPC ID lookup and suggests your current
+target. The link is optional. The mark appears on its original map and, when
+linked, in the NPC's Details & Places. Right-click a pin to edit it, Shift +
+right-click to remove it, or left-click a linked pin to open the creature entry.
 
 ## Locations
 
@@ -159,4 +170,4 @@ The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
 
-Current release: [Changelog](publishing/changelog-1.1.5.md) · [Release notes](publishing/release-notes-1.1.5.md).
+Current release: [Changelog](publishing/changelog-1.1.6.md) · [Release notes](publishing/release-notes-1.1.6.md).

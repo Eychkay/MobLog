@@ -224,9 +224,18 @@ function ML.BuildLocationBrowser(parent,scroll,ui,onPin)
                     row.coords=ui.Text(row,10); row.coords:SetPoint("TOPLEFT",8,-25); row.coords:SetSize(354,14); row.coords:SetWordWrap(false)
                     row.pin=row:CreateTexture(nil,"ARTWORK"); row.pin:SetPoint("RIGHT",-5,0); row.pin:SetSize(20,20); row.pin:SetTexture("Interface\\Icons\\INV_Misc_Map_01")
                     row:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight","ADD")
-                    row:SetScript("OnClick",function(button)
+                    row:RegisterForClicks("LeftButtonUp","RightButtonUp")
+                    row:SetScript("OnClick",function(button,mouse)
                         local place=button.place
                         if not place then return end
+                        if mouse=="RightButton" then
+                            if place.marker and IsShiftKeyDown() then
+                                ML.RemoveNPCMapMark(self.mob.id,place)
+                                GameTooltip:Hide()
+                                ML.RefreshWorldMapNotes()
+                            end
+                            return
+                        end
                         if place.known then
                             place.resolved,place.retryAfter=nil,nil
                             ML.ResolveKnownLocation(place); self:Draw()
@@ -237,7 +246,11 @@ function ML.BuildLocationBrowser(parent,scroll,ui,onPin)
                         local place=button.place
                         if not place then return end
                         GameTooltip:SetOwner(button,"ANCHOR_RIGHT")
-                        if place.known then
+                        if place.marker then
+                            GameTooltip:AddLine("Personal map mark",0.92,0.76,0.45)
+                            if place.label~="" then GameTooltip:AddLine(place.label:gsub("|","||"),0.85,0.82,0.74,true) end
+                            GameTooltip:AddLine("Shift + right-click to remove.",0.85,0.82,0.74,true)
+                        elseif place.known then
                             GameTooltip:AddLine("Known spawn point",0.55,0.76,0.94)
                             GameTooltip:AddLine("Catalog position, separate from your discoveries. This is not a live NPC location.",0.85,0.82,0.74,true)
                             if (place.flags or 0)%2==1 then GameTooltip:AddLine("Availability may depend on difficulty or phase.",0.85,0.82,0.74,true) end
@@ -263,9 +276,13 @@ function ML.BuildLocationBrowser(parent,scroll,ui,onPin)
                     local label=place.zone..(place.sub~="" and (" · "..place.sub) or "")
                     local pin=ML.CanPinLocation(place)
                     local waypoint=CanWaypoint(place)
-                    row.title:SetText(label..(place.known and "" or (" · "..place.kind.." · "..((place.count or 0)>0 and ("×"..place.count) or "Historic point"))))
+                    if place.marker then
+                        row.title:SetText(place.label~="" and (place.label:gsub("|","||")) or label)
+                    else
+                        row.title:SetText(label..(place.known and "" or (" · "..place.kind.." · "..((place.count or 0)>0 and ("×"..place.count) or "Historic point"))))
+                    end
                     local map=LocationMap(place)
-                    row.coords:SetText((place.known and "Known spawn point · " or "Your discovery · ")..(pin and (string.format("%.1f / %.1f",place.x*100,place.y*100)..(waypoint and " · Click to pin" or " · Click to open map")) or
+                    row.coords:SetText((place.marker and (place.zone.." · ") or place.known and "Known spawn point · " or "Your discovery · ")..(pin and (string.format("%.1f / %.1f",place.x*100,place.y*100)..(waypoint and " · Click to pin" or " · Click to open map")) or
                         (map and "Click to open map · Exact position unavailable" or "Map coordinates unavailable")))
                     row.pin:SetAlpha((waypoint or map) and 1 or 0.3)
                     if place.known then row:SetBackdropColor(0.035,0.055,0.075,1); row.title:SetTextColor(0.55,0.76,0.94)
@@ -296,6 +313,8 @@ function ML.BuildLocationBrowser(parent,scroll,ui,onPin)
             if #points==0 then self.entries[#self.entries+1]={message=message,offset=offset,height=28}; offset=offset+28 end
             for _,place in ipairs(points) do self.entries[#self.entries+1]={place=place,offset=offset,height=50}; offset=offset+50 end
         end
+        local marks=ML.NPCMapMarks(mob.id)
+        Section("marks","Personal map marks",#marks,marks,"Shift + right-click the world map to add and link a note.")
         Section("personal","Your discoveries",#personal,personal,"No personal encounter locations recorded.")
         Section("known","Known locations",count,known,ML.CatalogUnavailableText() or "No spawn locations are known for this NPC.")
         parent:SetHeight(math.max(140,offset)); ML.SetViewScroll(scroll,scroll:GetVerticalScroll()); self:Draw()

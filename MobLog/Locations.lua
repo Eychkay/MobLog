@@ -2,6 +2,32 @@
 -- Copyright (C) 2026 MobLog contributors
 local _, ML = ...
 
+function ML.NPCMapMarks(id)
+    return (ML.db.npcMapMarks and ML.db.npcMapMarks[id]) or {}
+end
+
+function ML.SaveNPCMapMark(id, place, label)
+    if not ML.CanPinLocation(place) then return end
+    ML.db.npcMapMarks = ML.db.npcMapMarks or {}
+    local marks = ML.db.npcMapMarks[id] or {}
+    ML.db.npcMapMarks[id] = marks
+    label = label:gsub("%s+", " "):match("^%s*(.-)%s*$")
+    table.insert(marks, 1, {marker = true, map = place.map, x = place.x, y = place.y,
+        zone = place.zone or "", sub = place.sub or "", label = label})
+    return true
+end
+
+function ML.RemoveNPCMapMark(id, mark)
+    local marks = ML.NPCMapMarks(id)
+    for index, item in ipairs(marks) do
+        if item == mark then
+            table.remove(marks, index)
+            if #marks == 0 then ML.db.npcMapMarks[id] = nil end
+            return
+        end
+    end
+end
+
 local function PointKey(location)
     return math.floor(location.x * 100 + 0.5) .. ":" .. math.floor(location.y * 100 + 0.5)
 end

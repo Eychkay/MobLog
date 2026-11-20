@@ -257,7 +257,8 @@ local function RenderCharacters(mob)
 end
 local function ShowLocationSections(mob)
     if not locationBrowser then
-        locationBrowser=ML.BuildLocationBrowser(detail:GetParent(),detailScroll,{Text=Text,Panel=Panel,Button=Button},function() window:Hide() end)
+        locationBrowser=ML.BuildLocationBrowser(detail:GetParent(),detailScroll,{Text=Text,Panel=Panel,Button=Button},
+            function() window:Hide() end)
     end
     locationBrowser:Show(mob,detail:GetStringHeight()+10)
 end
@@ -273,6 +274,9 @@ local function Details(mob, keepModel)
     local collectionMob = group or mob
     if AlbumBookActive() then albumEntry:SetMob(mob,group,album) end
     if detailWidgets.more then detailWidgets.more:SetEnabled(true) end
+    local note = ML.NPCNotePreview(mob.id)
+    detailWidgets.note:SetEnabled(ML.CanEditNPCNote(mob))
+    detailWidgets.note:SetText(note and "Notes" or "Add note")
     local nameGrouping = ML.db.nameGroups and ML.db.nameGroups[mob.name]
     local sameName = 0
     for _, entry in pairs(ML.db.mobs) do if entry.name == mob.name then sameName = sameName + 1 end end
@@ -299,6 +303,7 @@ local function Details(mob, keepModel)
     if activeTab == "characters" then RenderCharacters(mob); return end
     if AlbumBookActive() then
         local lines={"NPC #"..mob.id}
+        if note then lines[#lines+1]=note end
         if mob.catalogOnly then
             lines[#lines+1]="No personal encounters recorded."
         else
@@ -320,7 +325,7 @@ local function Details(mob, keepModel)
     if mob.catalogOnly then
         local zones = {}
         for _, area in ipairs(ML.TrinityData.npcs[mob.id][5]) do zones[#zones+1] = ML.CatalogAreaName(area) end
-        detail:SetText("|cffeac273" .. mob.name .. "|r\nNPC #" .. mob.id .. "\nStatus: Undiscovered\nType: " .. ML.ClassificationLabel(mob) ..
+        detail:SetText("|cffeac273" .. mob.name .. "|r\nNPC #" .. mob.id .. (note and ("\n"..note) or "") .. "\nStatus: Undiscovered\nType: " .. ML.ClassificationLabel(mob) ..
             (mob.tooltipType and (" · "..mob.tooltipType) or "").."\n\nNo encounters recorded." .. (#zones>0 and ("\nKnown areas: "..table.concat(zones, ", ")) or "") ..
             "\nCatalog entries may include older, unused or conditional variants.")
         ShowLocationSections(mob)
@@ -348,6 +353,7 @@ local function Details(mob, keepModel)
     if mob.tooltipType then table.insert(lines, 3, "Creature details: " .. mob.tooltipType) end
     local metadataStatus = ML.NPCMetadataStatus(mob)
     if metadataStatus then table.insert(lines, 2, "|cffeac273" .. metadataStatus .. "|r") end
+    if note then table.insert(lines, 2, note) end
     detail:SetText(table.concat(lines, "\n"))
     ShowLocationSections(mob)
 end
@@ -647,6 +653,8 @@ function ML.Refresh(background)
             if locationBrowser then locationBrowser:Hide() end
             detail:Show()
             selected = nil; model:ClearModel(); modelHint:SetText("")
+            detailWidgets.note:SetEnabled(false)
+            detailWidgets.note:SetText("Add note")
             appearanceCounter:SetText("0/0")
             nameGroupButton:SetEnabled(false)
             appearanceText:SetText("No mob selected")
@@ -793,7 +801,10 @@ local function Build()
     window:SetScript("OnDragStop", window.StopMovingOrSizing)
     window:SetScale(math.min(1, UIParent:GetWidth() / 940, UIParent:GetHeight() / 690))
     window:SetScript("OnKeyDown", function(self, key)
-        if key == "ESCAPE" then self:SetPropagateKeyboardInput(false); self:Hide()
+        if key == "ESCAPE" then
+            self:SetPropagateKeyboardInput(false)
+            local editor = mobPage and mobPage.noteEditor
+            if editor and editor:IsShown() then editor:Hide() else self:Hide() end
         else self:SetPropagateKeyboardInput(true) end
     end)
     window:EnableKeyboard(true)
@@ -1089,6 +1100,11 @@ local function Build()
         detailScroll:SetVerticalScroll(0); ML.Refresh(true)
     end)
     detailWidgets.more:SetPoint("TOPLEFT",708,-438); detailWidgets.more:SetEnabled(false)
+    detailWidgets.note=Button(mobPage,"Add note",130,function()
+        local mob=selected and ML.GetMob(selected)
+        ML.OpenNPCNoteEditor(mobPage,{Text=Text,Panel=Panel,Button=Button},mob)
+    end)
+    detailWidgets.note:SetEnabled(false)
     albumFilters.widgets={search,hint,sortButton,filterButton,collectionButton,filterCount}
     local listBackdrop=preview:GetBackdrop()
     local lastBookLayout
@@ -1114,17 +1130,22 @@ local function Build()
                 appearanceBar:SetWidth(438); appearanceText:SetWidth(300)
             end
             for index,name in ipairs({"info","loot","characters"}) do
-                local tab=tabs[name]; tab:ClearAllPoints(); tab:SetWidth(book and 140 or 286)
+                local tab=tabs[name]; tab:ClearAllPoints(); tab:SetWidth(book and 140 or 156)
                 if book then tab:SetPoint("TOPLEFT",albumEntry.frame,"TOPLEFT",404+(index-1)*146,-72)
                 else tab:SetPoint("TOPLEFT",410,-438) end
                 tab:SetFrameLevel(albumEntry.frame:GetFrameLevel()+3)
             end
+            detailWidgets.note:ClearAllPoints()
+            if book then detailWidgets.note:SetPoint("TOPRIGHT",albumEntry.frame,"TOPRIGHT",-17,-12)
+            else detailWidgets.note:SetPoint("TOPLEFT",574,-438) end
+            detailWidgets.note:SetFrameLevel(albumEntry.frame:GetFrameLevel()+3)
         end
         local showDetails=not albumMode or book
         preview:SetShown(showDetails); ds:SetShown(showDetails)
         detailPanel:SetShown(not albumMode); attitudeButton:SetShown(not albumMode); nameGroupButton:SetShown(not albumMode)
         for name,tab in pairs(tabs) do tab:SetShown(book or (not albumMode and name=="info")) end
         detailWidgets.more:SetShown(not albumMode)
+        detailWidgets.note:SetShown(showDetails)
         albumEntry.back:SetText(ML.db.options.mobView=="album" and "Back to album" or "Back to list")
         albumEntry.contentShade:SetShown(book and activeTab~="info")
         if book and activeTab=="info" then detail:SetTextColor(0.24,0.15,0.075); detail:SetShadowColor(0,0,0,0)
