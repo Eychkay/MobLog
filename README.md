@@ -6,16 +6,29 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.6.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.7.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 For Forever, install **MobLog** and **MobLog_ForeverDB** from
-**MobLog-1.1.6-Forever.zip** into `_forever_/Interface/AddOns/`.
+**MobLog-1.1.7-Forever.zip** into `_forever_/Interface/AddOns/`.
 Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
 Open with /moblog, /ml or the minimap button. The Mobs, Items, Session and Areas
 pages offer search, sorting, account-wide character breakdowns, class colors,
 interactive model previews and navigation between creatures and observed items.
+
+## My inventory
+
+Open **Items → My inventory** to search the recorded holdings of your characters
+by item name or ID. Filter by character or item type and select an item to see
+quantities, storage locations, and when they were checked. The coin balance opens
+the breakdown of recorded gold by character and shared bank. You can also enable
+inventory counts on item tooltips.
+
+Bags, equipped items, and carried money are recorded during play. Open each
+character's bank to record its contents. Shared storage is included once when
+the client makes it available. The **Item catalog** links to recorded holdings,
+and inventory entries link to their drop sources.
 
 ## Bestiary album
 
@@ -81,8 +94,8 @@ Use **Add note** in the creature details from the list or album to save a privat
 note for that NPC ID. Save an empty note to remove it.
 
 On the world map, **Shift + right-click** to write a note at the clicked location.
-The creature dropdown supports name or NPC ID lookup and suggests your current
-target. The link is optional. The mark appears on its original map and, when
+Search by name or NPC ID, then choose a creature in the dropdown. The dropdown
+suggests your current target. The link is optional. The mark appears on its original map and, when
 linked, in the NPC's Details & Places. Right-click a pin to edit it, Shift +
 right-click to remove it, or left-click a linked pin to open the creature entry.
 
@@ -170,4 +183,4 @@ The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
 
-Current release: [Changelog](publishing/changelog-1.1.6.md) · [Release notes](publishing/release-notes-1.1.6.md).
+Current release: [Changelog](publishing/changelog-1.1.7.md) · [Release notes](publishing/release-notes-1.1.7.md).

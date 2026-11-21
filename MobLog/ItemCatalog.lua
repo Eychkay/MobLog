@@ -179,7 +179,7 @@ function ML.CatalogItemInfo(id)
 end
 
 -- Derive this index from per-mob records so old data needs no duplicate store.
-function ML.ItemCatalog(query, rarity, area)
+function ML.ItemCatalog(query, rarity, area, focusedItem)
     if not published then ML.PublishItemSearchIndex() end
     query = string.lower(query or "")
     local mode=ML.GetSortMode("items")
@@ -189,7 +189,7 @@ function ML.ItemCatalog(query, rarity, area)
     local cached=catalogSnapshot
     if cached and cached.query==query and cached.rarity==rarity and cached.area==areaKey and
         cached.mode==mode and cached.index==published and cached.revision==itemRevision and
-        cached.locations==locations and cached.data==data then return cached.items end
+        cached.locations==locations and cached.data==data and cached.focusedItem==focusedItem then return cached.items end
     local byID, items = {}, {}
     for id,info in pairs(ML.TrinityData and ML.TrinityData.ready and ML.TrinityData.items or {}) do
         local cached=published[id]
@@ -220,6 +220,17 @@ function ML.ItemCatalog(query, rarity, area)
             end
         end
     end
+    if focusedItem and not byID[focusedItem] then
+        local item = ML.CatalogItemInfo(focusedItem)
+        local owned = ML.InventoryIndex()[focusedItem]
+        if owned then
+            item.link = item.link or owned.link
+            item.name = item.link and item.link:match("%[(.-)%]") or item.name
+            item.icon = item.icon or owned.icon
+            item.quality = item.quality or owned.quality
+        end
+        byID[focusedItem] = item
+    end
     for _, item in pairs(byID) do
         item.name = item.name or (item.link and item.link:match("%[(.-)%]")) or ("Item #" .. item.id)
         item.sortName=string.lower(item.name)
@@ -240,7 +251,7 @@ function ML.ItemCatalog(query, rarity, area)
     end
     table.sort(items,function(a,b) return ML.SortBefore(a,b,mode) end)
     catalogSnapshot={query=query,rarity=rarity,area=areaKey,mode=mode,index=published,
-        revision=itemRevision,locations=locations,data=data,items=items}
+        revision=itemRevision,locations=locations,data=data,focusedItem=focusedItem,items=items}
     return items
 end
 

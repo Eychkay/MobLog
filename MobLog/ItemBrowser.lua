@@ -1,13 +1,13 @@
 -- SPDX-License-Identifier: GPL-2.0-or-later
 -- Copyright (C) 2026 MobLog contributors
 local _, ML = ...
-local page, search, heading, explanation, empty, areaButton, rarityButton, rarityMenu
+local page, search, heading, explanation, empty, areaButton, rarityButton
 local Text, Panel, Button, left, right, selected
 local rarity, area = "all", "all"
 local closed = {observed=true,unlooted=true,sources=true,possible=true}
 local prepareButton,searchStatus
 local searchSequence=0
-local itemBuckets
+local itemBuckets, inventoryButton, focusedItem
 local function RarityLabel(entry)
     local color=type(entry.key)=="number" and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[entry.key]
     local hex=color and string.format("ff%02x%02x%02x",math.floor(color.r*255+0.5),math.floor(color.g*255+0.5),math.floor(color.b*255+0.5)) or entry.color
@@ -19,8 +19,7 @@ function ML.SetItemRarityFilter(key)
             rarity=key
             if ML.ItemSearchStatus() then ML.PauseItemSearchPreparation()
             else ML.PublishItemSearchIndex() end
-            if rarityButton then rarityButton:SetText(RarityLabel(entry).."  v") end
-            if rarityMenu then rarityMenu:Hide() end
+            if rarityButton then rarityButton:Update() end
             if left then left.scroll:SetVerticalScroll(0) end
             if page then ML.RefreshItems() end
             return
@@ -195,7 +194,7 @@ end
 
 function ML.RefreshItems()
     if not page or not page:IsVisible() then return end
-    local items=ML.ItemCatalog(search:GetText(),rarity,area)
+    local items=ML.ItemCatalog(search:GetText(),rarity,area,focusedItem)
     if not itemBuckets or itemBuckets.items~=items then
         itemBuckets={items=items,observed={},unlooted={},wishlist={},byID={}}
         for _,item in ipairs(items) do
@@ -234,6 +233,7 @@ function ML.RefreshItems()
     end
     if chosen then ML.LoadCatalogItem(chosen,search:GetText()=="" and rarity=="all") end
     heading:SetText(chosen and (chosen.link or chosen.name) or "Select an item")
+    ML.RefreshInventoryCatalogCount()
     explanation:SetText("Observed sources show your personal drop rates.\nPossible sources have no recorded drop for this item yet.")
     local sourceKey=tostring(selected)..":"..tostring(closed.sources)..":"..tostring(closed.possible)..":"..
         ML.GetSortMode("itemSources")..":"..tostring(ML.itemSourceRevision or 0)
@@ -258,6 +258,13 @@ function ML.RefreshItems()
         right.layoutItems,right.layoutKey=items,sourceKey
     end
     ML.RefreshItemSearchStatus()
+end
+
+function ML.RefreshInventoryCatalogCount()
+    if not inventoryButton or not page:IsVisible() then return end
+    local count = selected and ML.InventoryItemCount(selected) or 0
+    inventoryButton:SetText("In inventory: " .. count)
+    inventoryButton:SetEnabled(count > 0)
 end
 
 function ML.RefreshItemRows()
@@ -291,10 +298,10 @@ end
 function ML.BuildItemBrowser(parent,ui)
     Text,Panel,Button=ui.Text,ui.Panel,ui.Button
     page=CreateFrame("Frame",nil,parent); page:SetAllPoints()
-    local label=Text(page,10); label:SetPoint("TOPLEFT",28,-170); label:SetText("ITEM NAME OR ID")
-    search=CreateFrame("EditBox",nil,page,"InputBoxTemplate"); search:SetSize(160,28); search:SetPoint("TOPLEFT",34,-191); search:SetAutoFocus(false)
-    search:SetScript("OnTextChanged",function()
+    search=ML.BuildItemSearchField(page,Text)
+    search:SetScript("OnTextChanged",function(_, userInput)
         if not left then return end
+        if userInput then focusedItem = nil end
         searchSequence=searchSequence+1
         local token=searchSequence
         if search:GetText()~="" and ML.ItemSearchStatus() and not ML.BackgroundItemScanEnabled() then ML.PauseItemSearchPreparation() end
@@ -303,11 +310,10 @@ function ML.BuildItemBrowser(parent,ui)
             left.scroll:SetVerticalScroll(0); ML.RefreshItems()
         end)
     end)
-    search:SetScript("OnEscapePressed",function(self) self:ClearFocus() end)
-    ML.BuildSortDropdown(page,ui,"items","items",206,-191,164,function()
+    ML.BuildSortDropdown(page,ui,"items","items",206,-197,164,function()
         left.scroll:SetVerticalScroll(0); ML.RefreshItems()
     end)
-    rarityButton=Button(page,"All rarities  v",220,function() rarityMenu:SetShown(not rarityMenu:IsShown()) end)
+    rarityButton=ML.CreateDropdown(page,220,ML.ItemRarityFilters,function() return rarity end,ML.SetItemRarityFilter,RarityLabel)
     rarityButton:SetPoint("TOPLEFT",26,-226)
     prepareButton=Button(page,"Prepare search",116,function()
         if ML.ItemSearchStatus() then ML.PauseItemSearchPreparation(); return end
@@ -323,14 +329,7 @@ function ML.BuildItemBrowser(parent,ui)
         GameTooltip:Show()
     end)
     prepareButton:SetScript("OnLeave",function() GameTooltip:Hide() end)
-    rarityMenu=Panel(page); rarityMenu:SetSize(344,#ML.ItemRarityFilters*26+14); rarityMenu:SetPoint("TOPLEFT",rarityButton,"BOTTOMLEFT",0,-2)
-    rarityMenu:SetFrameLevel(page:GetFrameLevel()+70); rarityMenu:Hide()
-    for i,entry in ipairs(ML.ItemRarityFilters) do
-        local key=entry.key
-        local option=Button(rarityMenu,RarityLabel(entry),326,function() ML.SetItemRarityFilter(key) end)
-        option:SetPoint("TOPLEFT",9,-7-(i-1)*26); option:SetHeight(25)
-    end
-    areaButton=ML.BuildAreaNavigation(page,ui,26,-126,846,function(key) area=key; left.scroll:SetVerticalScroll(0); ML.RefreshItems() end)
+    areaButton=ML.BuildAreaNavigation(page,ui,26,-145,846,function(key) area=key; left.scroll:SetVerticalScroll(0); ML.RefreshItems() end)
     local function List(parentFrame,x,y,width,height,update,click)
         local clip=CreateFrame("Frame",nil,parentFrame); clip:SetPoint("TOPLEFT",x,y); clip:SetSize(width+26,height); clip:SetClipsChildren(true)
         local scroll=CreateFrame("ScrollFrame",nil,clip,"UIPanelScrollFrameTemplate"); scroll:SetPoint("TOPLEFT"); scroll:SetSize(width,height)
@@ -345,9 +344,11 @@ function ML.BuildItemBrowser(parent,ui)
         row.subtitle:SetText(item.quantity>0 and string.format("%d items · %d observed sources",item.quantity,#item.sources) or "Not observed · no drops recorded")
         row:SetBackdropColor(item.id==selected and 0.16 or 0.065,item.id==selected and 0.12 or 0.055,0.04,1)
     end,function(entry) if selected~=entry.item.id then ML.PushView() end; selected=entry.item.id; right.scroll:SetVerticalScroll(0); ML.RefreshItems() end)
-    local panel=Panel(page); panel:SetPoint("TOPLEFT",410,-180); panel:SetSize(462,388)
+    local panel=Panel(page); panel:SetPoint("TOPLEFT",410,-185); panel:SetSize(462,388)
     heading=Text(panel,17,{0.92,0.76,0.45}); heading:SetPoint("TOPLEFT",14,-15); heading:SetSize(430,24); heading:SetWordWrap(false)
     explanation=Text(panel,11); explanation:SetPoint("TOPLEFT",14,-51); explanation:SetSize(430,36)
+    inventoryButton=Button(panel,"In inventory: 0",151,function() ML.OpenInventoryItem(selected) end)
+    inventoryButton:SetPoint("TOPLEFT",13,-92); inventoryButton:SetHeight(24)
     ML.BuildSortDropdown(panel,ui,"itemSources","mixed",282,-92,164,function()
         right.scroll:SetVerticalScroll(0); ML.RefreshItems()
     end)
@@ -373,11 +374,11 @@ function ML.BuildItemBrowser(parent,ui)
     page:SetScript("OnShow",function() ML.PublishItemSearchIndex(); ML.RefreshItemSearchStatus() end)
     page:SetScript("OnHide",function()
         searchSequence=searchSequence+1
-        rarityMenu:Hide(); areaButton:CloseMenu()
+        rarityButton:CloseMenu(); areaButton:CloseMenu()
         if not ML.BackgroundItemScanEnabled() then ML.PauseItemSearchPreparation() end
     end)
     search:SetScript("OnEditFocusGained",function()
-        rarityMenu:Hide(); areaButton:CloseMenu()
+        rarityButton:CloseMenu(); areaButton:CloseMenu()
         if not ML.ItemSearchStatus() then ML.PublishItemSearchIndex() end
     end)
     page:Hide()
@@ -385,25 +386,26 @@ function ML.BuildItemBrowser(parent,ui)
 end
 
 function ML.GetItemsView()
-    return {query=search:GetText(),rarity=rarity,area=area,selected=selected,closed=ML.CopyViewTable(closed),
+    return {query=search:GetText(),rarity=rarity,area=area,selected=selected,focusedItem=focusedItem,closed=ML.CopyViewTable(closed),
         left=left.scroll:GetVerticalScroll(),right=right.scroll:GetVerticalScroll(),sort=ML.GetSortMode("items"),sourceSort=ML.GetSortMode("itemSources")}
 end
 function ML.RestoreItemsView(state)
     area=state.area or "all"; areaButton:SetSelection(area,false)
     rarity=state.rarity or "all"
-    for _,entry in ipairs(ML.ItemRarityFilters) do if entry.key==rarity then rarityButton:SetText(RarityLabel(entry).."  v") end end
-    closed=ML.CopyViewTable(state.closed); selected=state.selected
+    rarityButton:Update()
+    closed=ML.CopyViewTable(state.closed); selected=state.selected; focusedItem=state.focusedItem
     ML.db.sortModes=ML.db.sortModes or {}; ML.db.sortModes.items=state.sort; ML.db.sortModes.itemSources=state.sourceSort; ML.UpdateSortLabels()
     searchSequence=searchSequence+1; search:SetText(state.query or ""); searchSequence=searchSequence+1
     ML.RefreshItems(); ML.SetViewScroll(left.scroll,state.left); ML.SetViewScroll(right.scroll,state.right)
 end
 function ML.ResetItemsFilters()
+    focusedItem=nil
     area="all"; areaButton:Reset(); search:SetText(""); searchSequence=searchSequence+1; ML.SetItemRarityFilter("all")
     left.scroll:SetVerticalScroll(0); right.scroll:SetVerticalScroll(0); ML.RefreshItems()
 end
 function ML.UseItemsCurrentArea(filter) areaButton:SetSelection(filter,true) end
 function ML.FocusItem(id)
-    ML.ResetItemsFilters(); selected=id
+    ML.ResetItemsFilters(); selected=id; focusedItem=id
     closed[ML.IsWishlisted(id) and "wishlist" or "unlooted"]=false; closed.observed=false
     ML.RefreshItems()
     for _,entry in ipairs(left.entries) do if entry.item and entry.item.id==id then ML.SetViewScroll(left.scroll,entry.offset); break end end

@@ -2,7 +2,20 @@
 -- Copyright (C) 2026 MobLog contributors
 local _, ML = ...
 local labels={recent="Recent",kills="Most kills",dropped="Most dropped",az="Alphabetical A-Z",za="Alphabetical Z-A"}
-local menus,buttons={},{}
+local buttons={}
+
+function ML.CreateDropdown(parent, width, choices, current, select, label)
+    local button = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate")
+    button:SetWidth(width)
+    button:SetupMenu(function(_, root)
+        local entries = type(choices) == "function" and choices() or choices
+        for _, entry in ipairs(entries) do
+            root:CreateRadio(label and label(entry) or entry.label, function(key) return current() == key end, select, entry.key)
+        end
+        if #entries > 12 then root:SetScrollMode(285) end
+    end)
+    return button
+end
 
 function ML.GetSortMode(scope)
     local mode=ML.db.sortModes and ML.db.sortModes[scope]
@@ -36,29 +49,18 @@ end
 function ML.BuildSortDropdown(parent,ui,scope,kind,x,y,width,changed)
     local keys=kind=="items" and {"recent","dropped","az","za"} or
         (kind=="mixed" and {"recent","kills","dropped","az","za"} or {"recent","kills","az","za"})
-    local menu,button
-    button=ui.Button(parent,"",width,function()
-        local show=not menu:IsShown()
-        for _,other in ipairs(menus) do other:Hide() end
-        menu:SetShown(show)
+    local choices={}
+    for i,key in ipairs(keys) do choices[i]={key=key,label=labels[key]} end
+    local button
+    button=ML.CreateDropdown(parent,width,choices,function() return ML.GetSortMode(scope) end,function(mode)
+        ML.db.sortModes=ML.db.sortModes or {}; ML.db.sortModes[scope]=mode
+        button:UpdateLabel()
+        changed(mode)
     end)
     button:SetPoint("TOPLEFT",x,y)
-    menu=ui.Panel(parent); menu:SetSize(math.max(190,width),#keys*26+14)
-    menu:SetPoint("TOPRIGHT",button,"BOTTOMRIGHT",0,-2); menu:SetFrameLevel(parent:GetFrameLevel()+90)
-    menus[#menus+1]=menu
-    for i,key in ipairs(keys) do
-        local mode=key
-        local option=ui.Button(menu,labels[mode],menu:GetWidth()-18,function()
-            ML.db.sortModes=ML.db.sortModes or {}; ML.db.sortModes[scope]=mode
-            button:UpdateLabel(); menu:Hide(); changed(mode)
-        end)
-        option:SetPoint("TOPLEFT",9,-7-(i-1)*26); option:SetHeight(25)
-    end
-    function button:UpdateLabel() self:SetText((self.prefix or "")..labels[ML.GetSortMode(scope)].."  v") end
-    function button:CloseMenu() menu:Hide() end
-    button:HookScript("OnHide",function() menu:Hide() end)
+    function button:UpdateLabel() self:OverrideText((self.prefix or "")..labels[ML.GetSortMode(scope)]) end
     buttons[#buttons+1]=button
-    button:UpdateLabel(); menu:Hide()
+    button:UpdateLabel()
     return button
 end
 

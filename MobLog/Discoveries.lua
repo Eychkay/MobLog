@@ -182,9 +182,8 @@ local function AchievementPanel(frame)
     frame.paper:SetPoint("TOPLEFT",5,-5); frame.paper:SetPoint("BOTTOMRIGHT",-5,5)
     frame.paper:SetVertexColor(0.97,0.93,0.84)
 end
-local filterMenus={}
 local function CloseFilterMenus()
-    for _,menu in ipairs(filterMenus) do menu:Hide() end
+    statusButton:CloseMenu(); categoryButton:CloseMenu()
 end
 local categories={{key="all",label="All categories"},{key="collection",label="Collection"},{key="types",label="Creature types"},{key="encounters",label="Encounters"},{key="combat",label="Combat"}}
 local statuses={{key="all",label="All seals"},{key="pending",label="In progress"},{key="earned",label="Earned"}}
@@ -192,7 +191,6 @@ local function ChoiceLabel(choices,key)
     for _,choice in ipairs(choices) do if choice.key==key then return choice.label end end
 end
 function ML.SetDiscoveryFilters(status,category)
-    CloseFilterMenus()
     statusFilter=ChoiceLabel(statuses,status) and status or "all"
     categoryFilter=ChoiceLabel(categories,category) and category or "all"
     pageNumber=1
@@ -222,8 +220,7 @@ function ML.RefreshDiscoveries()
     pageNumber=math.min(pageNumber,pages)
     pageLabel:SetText(string.format("%d / %d · %d seals",pageNumber,pages,#visible))
     previousButton:SetEnabled(pageNumber>1); nextButton:SetEnabled(pageNumber<pages)
-    statusButton:SetText(ChoiceLabel(statuses,statusFilter).."  v")
-    categoryButton:SetText(ChoiceLabel(categories,categoryFilter).."  v")
+    statusButton:Update(); categoryButton:Update()
     local shown=math.min(pageSize,math.max(0,#visible-(pageNumber-1)*pageSize))
     content:SetHeight(math.max(1,math.ceil(shown/2)*136))
     for i,card in ipairs(cards) do
@@ -284,27 +281,12 @@ function ML.BuildDiscoveries(parent,ui)
     notifications:SetPoint("TOPLEFT",26,-197); notifications:SetSize(24,24)
     local caption=ui.Text(page,12); caption:SetPoint("LEFT",notifications,"RIGHT",4,0); caption:SetText("Show discovery notifications")
     notifications:SetScript("OnClick",function(self) ML.db.options.discoveryNotifications=self:GetChecked()==true end)
-    local function Dropdown(label,width,x,choices,select)
-        local menu
-        local button=ui.Button(page,label,width,function()
-            local show=not menu:IsShown()
-            CloseFilterMenus(); menu:SetShown(show)
-        end)
-        button:SetPoint("TOPLEFT",x,-195)
-        button:GetFontString():SetTextColor(unpack(gold))
-        menu=ui.Panel(page); menu:SetSize(width,#choices*26+14)
-        menu:SetPoint("TOPLEFT",button,"BOTTOMLEFT",0,-2)
-        menu:SetFrameLevel(page:GetFrameLevel()+90)
-        for i,choice in ipairs(choices) do
-            local key=choice.key
-            local option=ui.Button(menu,choice.label,width-18,function() select(key) end)
-            option:SetPoint("TOPLEFT",9,-7-(i-1)*26); option:SetHeight(25)
-        end
-        filterMenus[#filterMenus+1]=menu; menu:Hide()
-        return button
-    end
-    statusButton=Dropdown("All seals",132,348,statuses,function(key) ML.SetDiscoveryFilters(key,categoryFilter) end)
-    categoryButton=Dropdown("All categories",178,490,categories,function(key) ML.SetDiscoveryFilters(statusFilter,key) end)
+    statusButton=ML.CreateDropdown(page,132,statuses,function() return statusFilter end,
+        function(key) ML.SetDiscoveryFilters(key,categoryFilter) end)
+    statusButton:SetPoint("TOPLEFT",348,-195)
+    categoryButton=ML.CreateDropdown(page,178,categories,function() return categoryFilter end,
+        function(key) ML.SetDiscoveryFilters(statusFilter,key) end)
+    categoryButton:SetPoint("TOPLEFT",490,-195)
     previousButton=ui.Button(page,"<",30,function() ML.TurnDiscoveryPage(-1) end); previousButton:SetPoint("TOPLEFT",678,-195)
     nextButton=ui.Button(page,">",30,function() ML.TurnDiscoveryPage(1) end); nextButton:SetPoint("TOPLEFT",714,-195)
     for direction,button in pairs({Prev=previousButton,Next=nextButton}) do

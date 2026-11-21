@@ -22,6 +22,7 @@ class DiscoveryTests(unittest.TestCase):
             end
         ''')
         self.lua.execute((ROOT / "MobLog/DiscoveryLimits.lua").read_text(encoding="utf-8"), "MobLog", self.lua.globals().ML)
+        self.lua.execute((ROOT / "MobLog/Sorting.lua").read_text(encoding="utf-8"), "MobLog", self.lua.globals().ML)
         self.lua.execute((ROOT / "MobLog/Discoveries.lua").read_text(encoding="utf-8"), "MobLog", self.lua.globals().ML)
 
     def test_historical_backfill_is_silent_and_undated(self):
@@ -128,6 +129,25 @@ class DiscoveryTests(unittest.TestCase):
             function methods:GetFrameLevel() return 1 end
             function methods:GetVerticalScroll() return self.scroll or 0 end
             function methods:SetVerticalScroll(value) self.scroll=value end
+            local openDropdown
+            function methods:SetupMenu(generator)
+                self.options={}
+                generator(self,{CreateRadio=function(_,label,selected,choose,key)
+                    self.options[label]={selected=selected,choose=choose,key=key}
+                end})
+            end
+            function methods:Update()
+                for label,option in pairs(self.options) do
+                    if option.selected(option.key) then self:SetText(label); break end
+                end
+            end
+            function methods:OpenMenu() openDropdown=self end
+            function methods:CloseMenu() if openDropdown==self then openDropdown=nil end end
+            function methods:Choose(label)
+                local option=self.options[label]
+                option.choose(option.key)
+                self:CloseMenu()
+            end
             function ML.BuildFooterNote() end
             function ML.SetViewScroll(frame,value) frame:SetVerticalScroll(value) end
             function ML.ShowMob(id) opened=id end
@@ -174,26 +194,23 @@ class DiscoveryTests(unittest.TestCase):
             for _,obj in ipairs(objects) do if rawget(obj,"progress") and obj.shown then count=count+1 end end
             assert(count==0 and ML.GetDiscoveriesView().page==1)
             assert(not seal.earned, "Recycled cards must forget the old completing encounter")
-            local status,category,pending,types,combat
+            local status,category
             for _,obj in ipairs(objects) do
-                if obj.text=="Earned  v" then status=obj end
-                if obj.text=="Combat  v" then category=obj end
-                if obj.text=="In progress" and obj.scripts.OnClick then pending=obj end
-                if obj.text=="Creature types" and obj.scripts.OnClick then types=obj end
-                if obj.text=="Combat" and obj.scripts.OnClick then combat=obj end
+                if obj.text=="Earned" and obj.options then status=obj end
+                if obj.text=="Combat" and obj.options then category=obj end
             end
-            assert(status and category and pending and types and combat)
-            status.scripts.OnClick(status)
-            assert(pending.parent:IsShown() and ML.GetDiscoveriesView().status=="earned")
-            category.scripts.OnClick(category)
-            assert(not pending.parent:IsShown() and combat.parent:IsShown())
-            types.scripts.OnClick(types)
-            assert(ML.GetDiscoveriesView().category=="types" and not types.parent:IsShown())
-            status.scripts.OnClick(status); pending.scripts.OnClick(pending)
-            assert(ML.GetDiscoveriesView().status=="pending" and not pending.parent:IsShown())
+            assert(status and category and status.options["In progress"] and category.options["Creature types"])
+            status:OpenMenu()
+            assert(openDropdown==status and ML.GetDiscoveriesView().status=="earned")
+            category:OpenMenu()
+            assert(openDropdown==category and category.options.Combat.selected("combat"))
+            category:Choose("Creature types")
+            assert(ML.GetDiscoveriesView().category=="types" and not openDropdown)
+            status:OpenMenu(); status:Choose("In progress")
+            assert(ML.GetDiscoveriesView().status=="pending" and not openDropdown)
             assert(ML.GetDiscoveriesView().page==1 and ML.GetDiscoveriesView().scroll==0)
-            category.scripts.OnClick(category); page.scripts.OnHide(page)
-            assert(not types.parent:IsShown())
+            category:OpenMenu(); page.scripts.OnHide(page)
+            assert(not openDropdown)
 
         ''')
 

@@ -97,11 +97,17 @@ Each original NPC variant has separate **Observed drops** and **Not observed dro
 
 Each client uses its own bundled creature and loot catalog. The Retail catalog contains **31,375 item IDs linked to possible creature sources**. The Forever catalog uses separate creature, loot and location references. Catalog coverage is incomplete: a missing item or source does not mean a creature has no other drops. Availability can depend on difficulty, faction, character, game version or other conditions. Known loot contexts appear in tooltips; they are not exhaustive eligibility checks.
 
-Open **Items** to search by name or ID, filter by rarity using **color-coded options**, and browse by area. Compare **Observed sources**, with your personal percentages, against **Possible sources** where you have not recorded the item yet. Click a creature to jump directly to its bestiary entry.
+Open **Items → Item catalog** to search by name or ID, filter by rarity using **color-coded options**, and browse by area. Compare **Observed sources**, with your personal percentages, against **Possible sources** where you have not recorded the item yet. Click a creature to jump directly to its bestiary entry.
 
 Item names and rarities are cached for your client language. Use **Prepare search** to retrieve missing information explicitly in small batches. Preparation pauses in combat. With background scanning enabled (the default), a manually started scan continues after leaving Items or starting a search; use Pause to stop it. Otherwise, leaving Items or starting a search stops preparation. Item ID searches work without names, and some information may remain unavailable.
 
 Use **Ctrl-click** on supported item rows to open WoW's native item preview.
+
+## Find what you already own
+
+Open **Items → My inventory** to see what your characters have in their bags, banks, and equipment slots. Search by item name or ID, filter by character or item type, or jump between recorded holdings and the item catalog. Each storage location shows its last recorded time.
+
+Click the **gold, silver, and copper** display for the breakdown by character and shared bank. You can also show recorded counts on item tooltips. Log in on each character and open their bank to fill in the overview.
 
 ## Plan your next find
 
@@ -152,8 +158,8 @@ Open **Options → AddOns → MobLog** to configure the addon.
 
 ## Install for your client
 
-- **World of Warcraft Retail:** Extract both `MobLog` and `MobLog_TrinityDB` from `MobLog-1.1.6.zip` into `_retail_/Interface/AddOns/`.
-- **World of Warcraft Forever:** Extract both `MobLog` and `MobLog_ForeverDB` from `MobLog-1.1.6-Forever.zip` into `_forever_/Interface/AddOns/`.
+- **World of Warcraft Retail:** Extract both `MobLog` and `MobLog_TrinityDB` from `MobLog-1.1.7.zip` into `_retail_/Interface/AddOns/`.
+- **World of Warcraft Forever:** Extract both `MobLog` and `MobLog_ForeverDB` from `MobLog-1.1.7-Forever.zip` into `_forever_/Interface/AddOns/`.
 
 Fully restart WoW after installing or updating. Your existing records and preferences are preserved within each client.
 

@@ -21,8 +21,8 @@ end
 
 local function BuildEditor(map)
     local panel = CreateFrame("Frame", nil, map, "BackdropTemplate")
-    local width, baseHeight = 420, 232
-    panel:SetSize(width, baseHeight)
+    local width = 420
+    panel:SetSize(width, 263)
     panel:SetPoint("CENTER")
     panel:SetFrameStrata("FULLSCREEN_DIALOG")
     panel:SetToplevel(true)
@@ -89,74 +89,21 @@ local function BuildEditor(map)
     note:SetScript("OnEscapePressed",function() panel:Hide() end)
     Label("Linked creature (optional)",19,-130)
 
-    local function ChoiceRow(parent)
-        local row=CreateFrame("Button",nil,parent)
-        row:SetHeight(24)
-        local highlight=row:CreateTexture(nil,"HIGHLIGHT")
-        highlight:SetAllPoints()
-        highlight:SetColorTexture(0.54,0.34,0.12,0.23)
-        row.label=Ink(row,"GameFontNormal")
-        row.label:SetPoint("LEFT",10,0)
-        row.label:SetPoint("RIGHT",-24,0)
-        row.label:SetWordWrap(false)
-        return row
-    end
-    local dropdown=ChoiceRow(panel)
-    dropdown:SetPoint("TOPLEFT",19,-150)
-    dropdown:SetPoint("TOPRIGHT",-19,-150)
-    dropdown:SetHeight(29)
-    local field=dropdown:CreateTexture(nil,"BACKGROUND")
-    field:SetAllPoints()
-    field:SetColorTexture(0.48,0.30,0.14,0.25)
-    local arrow=Ink(dropdown,"GameFontNormal")
-    arrow:SetPoint("RIGHT",-8,0)
-    arrow:SetText("▼")
-
-    local menu=CreateFrame("Frame",nil,panel,"BackdropTemplate")
-    menu:SetPoint("TOPLEFT",dropdown,"BOTTOMLEFT",0,-2)
-    menu:SetPoint("TOPRIGHT",dropdown,"BOTTOMRIGHT",0,-2)
-    menu:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",
-        edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",edgeSize=12,
-        insets={left=3,right=3,top=3,bottom=3}})
-    menu:SetBackdropColor(0.90,0.79,0.59,1)
-    menu:SetBackdropBorderColor(0.63,0.42,0.20,1)
-    local search=EditBox(menu,60)
-    search:SetPoint("TOPLEFT",11,-8)
-    search:SetPoint("TOPRIGHT",-11,-8)
+    local search=EditBox(panel,60)
+    search:SetPoint("TOPLEFT",24,-150)
+    search:SetPoint("TOPRIGHT",-24,-150)
     local placeholder=Ink(search,"GameFontNormalSmall")
     placeholder:SetPoint("LEFT",3,0)
     placeholder:SetTextColor(0.78,0.70,0.56)
     placeholder:SetText("Search by name or NPC ID")
-    local empty=Ink(menu,"GameFontNormalSmall")
-    empty:SetPoint("TOPLEFT",12,-64)
-    empty:SetText("No matching creatures")
-    local function CloseMenu()
-        search:ClearFocus()
-        menu:Hide()
-        panel:SetHeight(baseHeight)
-        arrow:SetText("▼")
-    end
+    local dropdown
     local function Select(id)
         panel.npcID=id
-        dropdown.label:SetText(id>0 and (CreatureName(id).." (#"..id..")") or "No creature linked")
-        CloseMenu()
+        dropdown:OverrideText(id>0 and (CreatureName(id).." (#"..id..")") or "No creature linked")
+        search:ClearFocus()
     end
-    local none=ChoiceRow(menu)
-    none:SetPoint("TOPLEFT",5,-37)
-    none:SetPoint("TOPRIGHT",-5,-37)
-    none.label:SetText("No creature linked")
-    none:SetScript("OnClick",function() Select(0) end)
-    local results={}
-    for i=1,5 do
-        local row=ChoiceRow(menu)
-        row:SetPoint("TOPLEFT",5,-61-(i-1)*24)
-        row:SetPoint("TOPRIGHT",-5,-61-(i-1)*24)
-        row:SetScript("OnClick",function(self) Select(self.npcID) end)
-        results[i]=row
-    end
-    local function RefreshResults()
+    local function FindMatches()
         local query=search:GetText():lower():match("^%s*(.-)%s*$")
-        placeholder:SetShown(query=="" and not search:HasFocus())
         local number=tonumber(query:match("^#?(%d+)$"))
         local matches={}
         if number then
@@ -178,38 +125,30 @@ local function BuildEditor(map)
                 return a.id<b.id
             end)
             for _,entry in ipairs(found) do
-                if #matches==#results then break end
+                if #matches==5 then break end
                 matches[#matches+1]=entry
             end
         end
-        for i,row in ipairs(results) do
-            local entry=matches[i]
-            row.npcID=entry and entry.id
-            if entry then
-                local prefix=entry.target and "Current target · " or ""
-                row.label:SetText(prefix..CreatureName(entry.id).." (#"..entry.id..")")
-                row.label:SetTextColor(unpack(entry.id==panel.npcID and {0.49,0.26,0.062} or {0.26,0.15,0.065}))
-            end
-            row:SetShown(entry~=nil)
-        end
-        empty:SetShown(#matches==0)
-        local height=66+math.max(1,#matches)*24
-        menu:SetHeight(height)
-        if menu:IsShown() then panel:SetHeight(baseHeight+height+2) end
+        return matches
     end
-    dropdown:SetScript("OnClick",function()
-        if menu:IsShown() then CloseMenu(); return end
-        menu:Show()
-        arrow:SetText("▲")
-        search:SetText("")
-        search:SetFocus()
-        RefreshResults()
-    end)
-    search:SetScript("OnTextChanged",RefreshResults)
+    local function CreatureChoices()
+        local choices={{key=0,label="No creature linked"}}
+        for _,entry in ipairs(FindMatches()) do
+            local prefix=entry.target and "Current target · " or ""
+            choices[#choices+1]={key=entry.id,label=prefix..CreatureName(entry.id).." (#"..entry.id..")"}
+        end
+        return choices
+    end
+    dropdown=ML.CreateDropdown(panel,width-38,CreatureChoices,function() return panel.npcID or 0 end,Select)
+    dropdown:SetPoint("TOPLEFT",19,-183)
+    search:SetScript("OnTextChanged",function(self) placeholder:SetShown(self:GetText()=="" and not self:HasFocus()) end)
     search:SetScript("OnEditFocusGained",function() placeholder:Hide() end)
     search:SetScript("OnEditFocusLost",function() placeholder:SetShown(search:GetText()=="") end)
-    search:SetScript("OnEscapePressed",CloseMenu)
-    search:SetScript("OnEnterPressed",function() if results[1].npcID then Select(results[1].npcID) end end)
+    search:SetScript("OnEscapePressed",function(self) self:ClearFocus() end)
+    search:SetScript("OnEnterPressed",function()
+        local first=FindMatches()[1]
+        if first then Select(first.id) end
+    end)
     local cancel,save
     cancel = Button("Cancel",82,function() panel:Hide() end)
     cancel:SetPoint("BOTTOMRIGHT",-16,14)
@@ -228,7 +167,8 @@ local function BuildEditor(map)
     save:SetPoint("RIGHT",cancel,"LEFT",-8,0)
     panel:SetScript("OnHide",function(self)
         note:ClearFocus()
-        CloseMenu()
+        search:ClearFocus()
+        dropdown:CloseMenu()
         self.place,self.previous,self.previousID,self.targetID=nil,nil,nil,nil
     end)
     function panel:Open(place, id)
@@ -237,6 +177,7 @@ local function BuildEditor(map)
         self.targetID = TargetID()
         heading:SetText(id ~= nil and "Edit map note" or "New map note")
         location:SetText(string.format("%s · %.1f / %.1f",place.zone,place.x*100,place.y*100))
+        search:SetText("")
         Select(id or 0)
         note:SetText(place.label or "")
         self:Show()

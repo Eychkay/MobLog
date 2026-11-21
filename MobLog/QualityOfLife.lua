@@ -48,6 +48,18 @@ function ML.SetViewScroll(scroll,value)
     scroll:SetVerticalScroll(math.max(0,math.min(value or 0,math.max(0,child:GetHeight()-scroll:GetHeight()))))
 end
 
+function ML.BuildItemSearchField(parent, text)
+    local label = text(parent, 10)
+    label:SetPoint("TOPLEFT", 28, -183)
+    label:SetText("ITEM NAME OR ID")
+    local search = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
+    search:SetSize(160, 28)
+    search:SetPoint("TOPLEFT", 34, -197)
+    search:SetAutoFocus(false)
+    search:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    return search
+end
+
 function ML.MobHasWishlistDrops(mob)
     if not next(ML.db.itemWishlist or {}) then return false end
     local ready=ML.TrinityData and ML.TrinityData.ready

@@ -18,6 +18,7 @@ local activeTab = "info"
 local lootRows, tabs, locationRows = {}, {}, {}
 local detailScroll
 local mobPage, itemPage, sessionPage, areaPage, pageTabs = nil, nil, nil, nil, {}
+local inventoryPage, itemTabs, itemMode = nil, {}, "catalog"
 local currentPage = "mobs"
 local album, albumInspecting, albumEntry, applyDetailLayout
 local listViewport, detailWidgets, viewButtons = nil, {}, {}
@@ -41,12 +42,12 @@ local function AlbumBookActive()
     return AlbumMode() and albumInspecting==true
 end
 local rowHeight = 74
-local typeFilter, filterButton, filterMenu, filterCount = "all", nil, nil, nil
+local typeFilter, filterButton, filterCount = "all", nil, nil
 local appearanceText, appearanceCounter, previousAppearance, nextAppearance
 local groupRows, closedGroups = {}, {}
-local attitudeButton, attitudeMenu, bulkHostile
+local attitudeButton, bulkHostile
 local mobGroups, nameGroupButton = {}, nil
-local collectionFilter, collectionButton, collectionMenu, collectionSummary = "all", nil, nil, nil
+local collectionFilter, collectionButton, collectionSummary = "all", nil, nil
 local collectionChoices = {
     {key = "all", label = "All ranks"}, {key = "hunts", label = "Hunt targets"},
     {key = "unranked", label = "Unranked"},
@@ -71,16 +72,15 @@ local function UpdateMobPresentation()
         if active and model.request then model.request=nil; model:ClearModel() end
         for _,row in ipairs(rows) do row:Hide() end
         for _,header in pairs(groupRows) do header:Hide() end
-        if attitudeMenu then attitudeMenu:Hide() end
+        if attitudeButton then attitudeButton:CloseMenu() end
         window.empty:Hide()
     end
     if not active and album then album:Hide() end
     if albumEntry then albumEntry.frame:SetShown(book) end
     for _,widget in ipairs(albumFilters.widgets or {}) do widget:SetShown(not book) end
     if albumFilters.button then
-        local _,label=albumFilters.Current()
-        albumFilters.button:SetText(label.."  v"); albumFilters.button:SetShown(active)
-        if not active then albumFilters.menu:Hide() end
+        albumFilters.button:SetShown(active)
+        if active then albumFilters.button:Update() else albumFilters.button:CloseMenu() end
     end
 end
 function ML.SetCollectionFilter(key)
@@ -88,8 +88,7 @@ function ML.SetCollectionFilter(key)
     for _, choice in ipairs(collectionChoices) do if choice.key == key then label = choice.label; break end end
     if not label then return end
     collectionFilter = key
-    if collectionButton then collectionButton:SetText(label .. "  v") end
-    if collectionMenu then collectionMenu:Hide() end
+    if collectionButton then collectionButton:Update() end
     if list then list:SetVerticalScroll(0) end
     if window then ML.Refresh() end
 end
@@ -97,8 +96,7 @@ function ML.SetMobTypeFilter(key)
     for _, entry in ipairs(ML.MobTypeFilters) do
         if entry.key == key then
             typeFilter = key
-            if filterButton then filterButton:SetText(entry.label .. "  v") end
-            if filterMenu then filterMenu:Hide() end
+            if filterButton then filterButton:Update() end
             if list then list:SetVerticalScroll(0) end
             if window then ML.Refresh() end
             return
@@ -282,7 +280,7 @@ local function Details(mob, keepModel)
     for _, entry in pairs(ML.db.mobs) do if entry.name == mob.name then sameName = sameName + 1 end end
     nameGroupButton:SetEnabled(not mob.provisional and not mob.catalogOnly and (sameName > 1 or nameGrouping))
     nameGroupButton:SetText(nameGrouping and "Restore auto grouping" or "Group same name")
-    attitudeButton:SetText("Attitude: " .. ML.ReactionLabel(mob)); attitudeButton:SetEnabled(not mob.provisional and not mob.catalogOnly)
+    attitudeButton:OverrideText("Attitude: " .. ML.ReactionLabel(mob)); attitudeButton:SetEnabled(not mob.provisional and not mob.catalogOnly)
     local choices, index = ML.ModelChoices(group or mob), 1
     for i, choice in ipairs(choices) do
         if choice.mob.id == mob.id and choice.display == ML.SelectedDisplay(mob) then index = i; break end
@@ -605,7 +603,10 @@ function ML.Refresh(background)
     for _, rank in ipairs(ML.KillRanks) do summary[#summary + 1] = "|c" .. rank.hex .. ranks[rank.key] .. " " .. rank.label .. "|r" end
     collectionSummary:SetText(table.concat(summary, " · "))
     bulkHostile:SetShown(unknown > 0); bulkHostile.unknownCount = unknown
-    if currentPage == "items" then ML.RefreshItems(); return end
+    if currentPage == "items" then
+        if itemMode == "inventory" then ML.RefreshInventoryView() else ML.RefreshItems() end
+        return
+    end
     if currentPage == "session" then ML.RefreshSessionReport(); return end
     if currentPage == "areas" then ML.RefreshAreas(groups); return end
     if currentPage == "discoveries" then ML.RefreshDiscoveries(); return end
@@ -659,7 +660,7 @@ function ML.Refresh(background)
             nameGroupButton:SetEnabled(false)
             appearanceText:SetText("No mob selected")
             previousAppearance:SetEnabled(false); nextAppearance:SetEnabled(false)
-            attitudeButton:SetText("Set attitude"); attitudeButton:SetEnabled(false)
+            attitudeButton:OverrideText("Set attitude"); attitudeButton:SetEnabled(false)
             detail:SetText(#mobs>0 and "Select a creature to inspect its model and details." or undiscoveredCount>0 and "Expand Undiscovered and select a creature to inspect its model and details." or ML.CatalogUnavailableText() or "No mobs match your search and filters.")
             detail:GetParent():SetHeight(140)
             for _, row in ipairs(lootRows) do row:Hide() end
@@ -736,16 +737,36 @@ function ML.Refresh(background)
         Details(ML.GetMob(selected), true)
     end
 end
+local function ShowItemTabs()
+    local items = currentPage == "items"
+    itemPage:SetShown(items and itemMode == "catalog")
+    inventoryPage:SetShown(items and itemMode == "inventory")
+    for mode, button in pairs(itemTabs) do
+        button:SetShown(items)
+        button.selectedMark:SetShown(mode == itemMode)
+    end
+end
+
+local function SelectItemMode(mode, skipHistory)
+    if itemMode == mode then return end
+    if not skipHistory then ML.PushView() end
+    itemMode = mode
+    ShowItemTabs()
+    ML.UpdateNavigationButtons()
+    ML.Refresh()
+end
+
 function ML.SelectPage(name,skipHistory)
     if name~=currentPage and not skipHistory then ML.PushView() end
     if name=="mobs" or name=="items" then ML.EnsureCatalog() end
     if catalogAreaButton then catalogAreaButton:CloseMenu() end
-    if filterMenu then filterMenu:Hide() end
-    if collectionMenu then collectionMenu:Hide() end
-    if attitudeMenu then attitudeMenu:Hide() end
+    if filterButton then filterButton:CloseMenu() end
+    if collectionButton then collectionButton:CloseMenu() end
+    if attitudeButton then attitudeButton:CloseMenu() end
     currentPage = name
     ML.UpdateNavigationButtons()
-    mobPage:SetShown(name == "mobs"); itemPage:SetShown(name == "items"); sessionPage:SetShown(name == "session")
+    mobPage:SetShown(name == "mobs"); sessionPage:SetShown(name == "session")
+    ShowItemTabs()
     areaPage:SetShown(name == "areas")
     window.discoveryPage:SetShown(name == "discoveries")
     for key, tab in pairs(pageTabs) do tab.selectedMark:SetShown(key == name) end
@@ -789,6 +810,21 @@ function ML.OpenMob(id)
         end
     end
 end
+local function BuildItems()
+    local ui = { Text = Text, Panel = Panel, Button = Button }
+    itemPage = ML.BuildItemBrowser(window, ui)
+    inventoryPage = ML.BuildInventoryView(window, ui)
+    for i, mode in ipairs({ "catalog", "inventory" }) do
+        local tab = Button(window, mode == "catalog" and "Item catalog" or "My inventory", 132, function()
+            SelectItemMode(mode)
+        end)
+        tab:SetPoint("TOPLEFT", 26 + (i - 1) * 139, -121)
+        tab:SetHeight(23)
+        tab:Hide()
+        itemTabs[mode] = tab
+    end
+end
+
 local function Build()
     window = Panel(UIParent)
     window:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -850,44 +886,24 @@ local function Build()
     end)
     search:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
     search:SetScript("OnEditFocusGained", function()
-        if albumFilters.menu then albumFilters.menu:Hide() end
-        if filterMenu then filterMenu:Hide() end
-        if collectionMenu then collectionMenu:Hide() end
+        if albumFilters.button then albumFilters.button:CloseMenu() end
+        if filterButton then filterButton:CloseMenu() end
+        if collectionButton then collectionButton:CloseMenu() end
     end)
     local hint = Text(mobPage, 10); hint:SetPoint("TOPLEFT", 28, -170); hint:SetText("MOB, NPC ID OR LOCATION")
     sortButton=ML.BuildSortDropdown(mobPage,{Button=Button,Panel=Panel},"mobs","mobs",206,-191,164,function()
         list:SetVerticalScroll(0); ML.Refresh()
     end)
-    filterButton = Button(mobPage, "All types  v", 130, function()
-        if collectionMenu then collectionMenu:Hide() end
-        filterMenu:SetShown(not filterMenu:IsShown())
-    end)
-    filterButton:SetPoint("TOPLEFT", 26, -226)
+    filterButton = ML.CreateDropdown(mobPage,130,ML.MobTypeFilters,function() return typeFilter end,ML.SetMobTypeFilter)
+    filterButton:SetPoint("TOPLEFT",26,-226)
+    collectionButton = ML.CreateDropdown(mobPage,130,collectionChoices,function() return collectionFilter end,ML.SetCollectionFilter)
+    collectionButton:SetPoint("TOPLEFT",164,-226)
     filterCount = Text(mobPage, 10); filterCount:SetPoint("TOPLEFT", 302, -226); filterCount:SetSize(92, 28)
     filterCount:SetWordWrap(false); filterCount:SetJustifyH("RIGHT"); filterCount:SetJustifyV("MIDDLE")
-    filterMenu = Panel(mobPage); filterMenu:SetSize(220, #ML.MobTypeFilters * 26 + 14)
-    filterMenu:SetPoint("TOPLEFT", filterButton, "BOTTOMLEFT", 0, -2)
-    filterMenu:SetFrameLevel(window:GetFrameLevel() + 50); filterMenu:Hide()
-    for i, entry in ipairs(ML.MobTypeFilters) do
-        local option = Button(filterMenu, entry.label, 202, function() ML.SetMobTypeFilter(entry.key) end)
-        option:SetPoint("TOPLEFT", 9, -7 - (i - 1) * 26); option:SetHeight(25)
-    end
-    collectionButton = Button(mobPage, "All ranks  v", 130, function()
-        filterMenu:Hide(); collectionMenu:SetShown(not collectionMenu:IsShown())
-    end)
-    collectionButton:SetPoint("TOPLEFT", 164, -226)
-    collectionMenu = Panel(mobPage); collectionMenu:SetSize(280, #collectionChoices * 26 + 14)
-    collectionMenu:SetPoint("TOPLEFT", collectionButton, "BOTTOMLEFT", 0, -2)
-    collectionMenu:SetFrameLevel(window:GetFrameLevel() + 50); collectionMenu:Hide()
-    for i, choice in ipairs(collectionChoices) do
-        local key = choice.key
-        local option = Button(collectionMenu, choice.label, 262, function() ML.SetCollectionFilter(key) end)
-        option:SetPoint("TOPLEFT", 9, -7 - (i - 1) * 26); option:SetHeight(25)
-    end
     window:SetScript("OnHide", function()
         if ML.ReleaseCatalogViewCache then ML.ReleaseCatalogViewCache() end
         if catalogAreaButton then catalogAreaButton:CloseMenu() end
-        filterMenu:Hide(); collectionMenu:Hide(); if attitudeMenu then attitudeMenu:Hide() end
+        filterButton:CloseMenu(); collectionButton:CloseMenu(); if attitudeButton then attitudeButton:CloseMenu() end
     end)
     -- Clip nested portrait frames and rows at the list boundary, while keeping
     -- the native scrollbar inside the wider clipping container.
@@ -1033,7 +1049,16 @@ local function Build()
         GameTooltip:Show()
     end)
     bulkHostile:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    attitudeButton = Button(mobPage, "Set attitude", 180, function() attitudeMenu:SetShown(not attitudeMenu:IsShown()) end)
+    attitudeButton = ML.CreateDropdown(mobPage,180,{
+        {key="auto",label="Auto (observed)"},{key="friendly",label="Friendly"},
+        {key="neutral",label="Neutral"},{key="hostile",label="Hostile"},{key="unknown",label="Unknown"},
+    },function()
+        local mob=selected and ML.GetMob(selected)
+        return mob and mob.reactionOverride or "auto"
+    end,function(key)
+        if selected then ML.SetAttitude(selected,key); ML.Refresh() end
+    end)
+    attitudeButton:OverrideText("Set attitude")
     attitudeButton:SetPoint("BOTTOMLEFT", 424, 49)
     nameGroupButton = Button(mobPage, "Group same name", 240, function()
         local mob = selected and ML.db.mobs[selected]
@@ -1050,17 +1075,6 @@ local function Build()
         GameTooltip:Show()
     end)
     nameGroupButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    attitudeMenu = Panel(mobPage); attitudeMenu:SetSize(200, 144)
-    attitudeMenu:SetPoint("BOTTOMLEFT", attitudeButton, "TOPLEFT", 0, 2)
-    attitudeMenu:SetFrameLevel(window:GetFrameLevel() + 60); attitudeMenu:Hide()
-    for i, choice in ipairs({ {key = "auto", label = "Auto (observed)"}, {key = "friendly", label = "Friendly"},
-        {key = "neutral", label = "Neutral"}, {key = "hostile", label = "Hostile"}, {key = "unknown", label = "Unknown"} }) do
-        local option = Button(attitudeMenu, choice.label, 182, function()
-            if selected then ML.SetAttitude(selected, choice.key); ML.Refresh() end
-            attitudeMenu:Hide()
-        end)
-        option:SetPoint("TOPLEFT", 9, -7 - (i - 1) * 26); option:SetHeight(25)
-    end
     detailWidgets={preview,detailPanel,ds,attitudeButton,nameGroupButton,tabs.info,tabs.loot,tabs.characters}
     albumEntry=ML.BuildAlbumEntry(mobPage,{Text=Text,Button=Button},function()
         local prior=history[#history]
@@ -1077,22 +1091,10 @@ local function Build()
             detailScroll:SetVerticalScroll(0); ML.Refresh(true)
         end
     end)
-    albumFilters.button=Button(mobPage,"All entries  v",182,function()
-        filterMenu:Hide(); collectionMenu:Hide()
-        albumFilters.menu:SetShown(not albumFilters.menu:IsShown())
+    albumFilters.button=ML.CreateDropdown(mobPage,182,albumFilters.choices,albumFilters.Current,function(key)
+        ML.PushView(); ML.db.options.albumCategory=key; ML.Refresh(true)
     end)
-    albumFilters.button:SetPoint("TOPLEFT",680,-194); albumFilters.button:SetHeight(24)
-    albumFilters.menu=Panel(mobPage); albumFilters.menu:SetSize(200,#albumFilters.choices*26+14)
-    albumFilters.menu:SetPoint("TOPRIGHT",albumFilters.button,"BOTTOMRIGHT",0,-2)
-    albumFilters.menu:SetFrameLevel(window:GetFrameLevel()+60); albumFilters.menu:Hide()
-    albumFilters.button:HookScript("OnHide",function() albumFilters.menu:Hide() end)
-    for i,choice in ipairs(albumFilters.choices) do
-        local key=choice.key
-        local option=Button(albumFilters.menu,choice.label,182,function()
-            ML.PushView(); ML.db.options.albumCategory=key; albumFilters.menu:Hide(); ML.Refresh(true)
-        end)
-        option:SetPoint("TOPLEFT",9,-7-(i-1)*26); option:SetHeight(25)
-    end
+    albumFilters.button:SetPoint("TOPLEFT",680,-194)
     detailWidgets.more=Button(mobPage,"More details",164,function()
         if not selected or not ML.GetMob(selected) then return end
         ML.PushView(); albumInspecting=true; activeTab="info"
@@ -1184,7 +1186,7 @@ local function Build()
     end
     ML.BuildFooterNote(mobPage,Text,"Instances: loot-based records. Open world: observed deaths and loot.\nTracking is best effort. Hover for details.",
         "Instances: loot-based records. Open world: observed deaths and loot.\nRestricted WoW data can prevent recording. Participation does not prove a killing blow.")
-    itemPage = ML.BuildItemBrowser(window, { Text = Text, Panel = Panel, Button = Button })
+    BuildItems()
     sessionPage = ML.BuildSessionReport(window, { Text = Text, Panel = Panel, Button = Button })
     areaPage = ML.BuildAreas(window, { Text = Text, Panel = Panel, Button = Button })
     window.discoveryPage = ML.BuildDiscoveries(window, { Text = Text, Panel = Panel, Button = Button })
@@ -1222,7 +1224,9 @@ end
 function ML.UpdateNavigationButtons()
     if not backButton then return end
     backButton:SetEnabled(#history>0)
-    resetFiltersButton:SetEnabled(currentPage~="session" and currentPage~="discoveries"); currentAreaButton:SetEnabled(currentPage~="session" and currentPage~="discoveries")
+    local filters = currentPage ~= "session" and currentPage ~= "discoveries"
+    resetFiltersButton:SetEnabled(filters)
+    currentAreaButton:SetEnabled(filters and not (currentPage == "items" and itemMode == "inventory"))
 end
 function ML.PushView()
     if restoringView or not window or not window:IsShown() then return end
@@ -1234,7 +1238,9 @@ function ML.PushView()
             closed=ML.CopyViewTable(closedGroups),tab=activeTab,page=catalogPage,left=list:GetVerticalScroll(),right=detailScroll:GetVerticalScroll(),
             sort=ML.GetSortMode("mobs"),lootSort=ML.GetSortMode("mobLoot"),lootClosed=mobLoot and ML.CopyViewTable(mobLoot.closed),
             locationState=locationBrowser and {closed=ML.CopyViewTable(locationBrowser.closed),page=locationBrowser.page}}
-    elseif currentPage=="items" then state.view=ML.GetItemsView()
+    elseif currentPage=="items" then
+        state.itemMode = itemMode
+        state.view = itemMode == "inventory" and ML.GetInventoryView() or ML.GetItemsView()
     elseif currentPage=="areas" then state.view=ML.GetAreasView()
     elseif currentPage=="discoveries" then state.view=ML.GetDiscoveriesView()
     else state.view=ML.GetSessionView() end
@@ -1245,6 +1251,7 @@ function ML.GoBack()
     local state=table.remove(history)
     if not state then return end
     restoringView=true
+    if state.page == "items" then itemMode = state.itemMode or "catalog" end
     ML.SelectPage(state.page,true)
     if state.page=="mobs" then
         local view=state.view
@@ -1269,14 +1276,18 @@ function ML.GoBack()
             end
         end
         ML.SetViewScroll(list,view.left); ML.SetViewScroll(detailScroll,view.right)
-    elseif state.page=="items" then ML.RestoreItemsView(state.view)
+    elseif state.page=="items" then
+        if itemMode == "inventory" then ML.RestoreInventoryView(state.view) else ML.RestoreItemsView(state.view) end
     elseif state.page=="areas" then ML.RestoreAreasView(state.view)
     elseif state.page=="discoveries" then ML.RestoreDiscoveriesView(state.view)
     else ML.RestoreSessionView(state.view) end
     ML.UpdateSortLabels(); restoringView=false; ML.UpdateNavigationButtons()
 end
 function ML.OpenItem(id)
-    ML.PushView(); ML.SelectPage("items",true); ML.FocusItem(id)
+    ML.PushView(); itemMode="catalog"; ML.SelectPage("items",true); ML.FocusItem(id)
+end
+function ML.OpenInventoryItem(id)
+    ML.PushView(); itemMode="inventory"; ML.SelectPage("items",true); ML.FocusInventoryItem(id)
 end
 function ML.ResetCurrentFilters()
     ML.PushView()
@@ -1284,7 +1295,8 @@ function ML.ResetCurrentFilters()
         ML.db.options.albumCategory="all"
         catalogArea="all"; catalogAreaButton:Reset(); search:SetText("")
         ML.SetMobTypeFilter("all"); ML.SetCollectionFilter("all"); list:SetVerticalScroll(0); ML.Refresh()
-    elseif currentPage=="items" then ML.ResetItemsFilters()
+    elseif currentPage=="items" then
+        if itemMode == "inventory" then ML.ResetInventoryFilters() else ML.ResetItemsFilters() end
     elseif currentPage=="areas" then ML.ResetAreasFilters() end
 end
 function ML.UseCurrentArea()
