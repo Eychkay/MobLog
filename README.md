@@ -6,10 +6,10 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.7.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.8.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 For Forever, install **MobLog** and **MobLog_ForeverDB** from
-**MobLog-1.1.7-Forever.zip** into `_forever_/Interface/AddOns/`.
+**MobLog-1.1.8-Forever.zip** into `_forever_/Interface/AddOns/`.
 Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
@@ -110,6 +110,18 @@ Personal discoveries and known spawns stay separate. Supported locations open a
 map; only verified, supported coordinates can place a waypoint. A dungeon-map
 entry point does not establish the NPC's exact floor or live location.
 
+## Gathering locations
+
+Successful mining and herbalism gathers add small markers to the world map and
+minimap. Nearby minimap markers become hollow rings when the matching WoW
+tracking mode is active. Hover over a marker for its approximate coordinates,
+gather count, and recorded item quantities. The two maps have separate visibility
+settings under **Options → AddOns → MobLog**.
+
+Select a gathered item in the **Item catalog** to see its **Gathering sources**.
+The source rows show the recorded amount at each location and can set waypoints
+on supported maps. Existing markers gain item quantities from new gathers.
+
 ## Background work and search
 
 Prepare catalog in the background is enabled by default and starts five seconds
@@ -183,4 +195,4 @@ The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
 
-Current release: [Changelog](publishing/changelog-1.1.7.md) · [Release notes](publishing/release-notes-1.1.7.md).
+Current release: [Changelog](publishing/changelog-1.1.8.md) · [Release notes](publishing/release-notes-1.1.8.md).

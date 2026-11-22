@@ -1,8 +1,8 @@
 # MobLog — Your Personal Bestiary
 
-Every creature has a story. Keep a record of the ones you encounter.
+MobLog is a personal bestiary and inventory for **World of Warcraft Retail and Forever**. Record the creatures you encounter, browse them in a parchment album, follow your loot history, and save notes on creatures or on the world map. A bundled catalog shows possible drops and habitats alongside your own discoveries.
 
-MobLog builds an account-wide bestiary as you explore, bringing together NPC sightings, kill records, creature models, personal loot history, wishlists, personal notes and map pins in one place. A bundled catalog helps you explore creatures and possible drops you have not recorded yet.
+**New in 1.1.8 · Gathering locations.** Find your way back to the herbs and ore you have gathered. MobLog adds small markers to your world map and minimap. Hover over a marker to see the items and quantities recorded there, or open an item in the catalog to see its gathering locations.
 
 ## Discover and collect
 
@@ -105,15 +105,25 @@ Use **Ctrl-click** on supported item rows to open WoW's native item preview.
 
 ## Find what you already own
 
-Open **Items → My inventory** to see what your characters have in their bags, banks, and equipment slots. Search by item name or ID, filter by character or item type, or jump between recorded holdings and the item catalog. Each storage location shows its last recorded time.
+Search by **item name or ID** and use the character and item type dropdowns to narrow the list. Select an item to see the quantity in each character's bags, equipped gear or bank, together with the last scan time. Open **View drop sources** to see where the item can drop. In the Item catalog, **In inventory** takes you back to the recorded locations.
 
-Click the **gold, silver, and copper** display for the breakdown by character and shared bank. You can also show recorded counts on item tooltips. Log in on each character and open their bank to fill in the overview.
+Click the **gold, silver and copper** display for the balance by character and shared bank. Enable **Show inventory counts on item tooltips** to check your recorded holdings while browsing items elsewhere in the game.
+
+Log in on each character to record their bags, equipped items and carried money. Open their bank to record its contents. The shared bank is counted once when available. Retail and Forever keep separate inventory records.
+
+## Find your gathering spots again
+
+Mine ore or gather herbs to save the approximate location. Hover over a marker on either map for the last gather date, coordinates, number of gathers, and recorded quantities per item.
+
+Nearby minimap icons turn into hollow rings when the matching WoW tracking mode is active, leaving room for the live tracking dot. The world map and minimap markers can be toggled separately in MobLog's options.
+
+Select an item in **Items → Item catalog** and open **Gathering sources** to see its recorded locations. Click a source to set a waypoint on a supported map. Previously saved markers gain item quantities from new gathers.
 
 ## Plan your next find
 
 Add items to your account-wide **Wishlist** with **+**, or remove them with **\***. Wishlisted items have their own section, and associated creatures show a wishlist indicator.
 
-Your wishlist stays under your control: observing a drop does not remove an item automatically, because MobLog does not verify whether you received or still own it.
+Wishlist entries stay until you remove them. A loot observation records what appeared in the loot window. The inventory shows what was present the last time MobLog checked your storage.
 
 Use **Back**, **Reset filters** and **Current area** in the footer to move between creatures, items and areas. Back restores your recent views, including filters, selections and scroll positions.
 
@@ -121,7 +131,7 @@ Use **Back**, **Reset filters** and **Current area** in the footer to move betwe
 
 Use **Add note** in the creature details to save a personal reminder for that NPC variant, even if you have only found it in the catalog. The first line appears in the creature details. Open **Notes** to edit the full text.
 
-On the world map, **Shift + right-click** to add a note at your cursor. The dropdown lets you link a creature using your current target, a name search or an NPC ID. Linking is optional.
+On the world map, **Shift + right-click** to add a note at your cursor. To link a creature, search by name or NPC ID and choose it from the dropdown. Your current target is available as a suggestion.
 
 - **Left-click** a linked gold **!** marker to open its bestiary entry.
 - **Right-click** a marker to edit the note or change its creature link.
@@ -158,8 +168,8 @@ Open **Options → AddOns → MobLog** to configure the addon.
 
 ## Install for your client
 
-- **World of Warcraft Retail:** Extract both `MobLog` and `MobLog_TrinityDB` from `MobLog-1.1.7.zip` into `_retail_/Interface/AddOns/`.
-- **World of Warcraft Forever:** Extract both `MobLog` and `MobLog_ForeverDB` from `MobLog-1.1.7-Forever.zip` into `_forever_/Interface/AddOns/`.
+- **World of Warcraft Retail:** Extract both `MobLog` and `MobLog_TrinityDB` from `MobLog-1.1.8.zip` into `_retail_/Interface/AddOns/`.
+- **World of Warcraft Forever:** Extract both `MobLog` and `MobLog_ForeverDB` from `MobLog-1.1.8-Forever.zip` into `_forever_/Interface/AddOns/`.
 
 Fully restart WoW after installing or updating. Your existing records and preferences are preserved within each client.
 

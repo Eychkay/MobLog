@@ -67,6 +67,12 @@ end
 local function IndexIDs()
     local ids=ML.CopyViewTable(ML.db.itemWishlist)
     for id in pairs(ML.TrinityData and ML.TrinityData.ready and ML.TrinityData.items or {}) do ids[id]=true end
+    for id, item in pairs(ML.db.gatheredItems or {}) do
+        ids[id] = true
+        if not Complete(infoCache[id]) and type(item.name) == "string" and ValidQuality(item.quality) then
+            infoCache[id] = { name = item.name, link = item.link, icon = item.icon, quality = item.quality }
+        end
+    end
     for _,mob in pairs(ML.db.mobs) do
         for id,drop in pairs(mob.items or {}) do
             ids[id]=true
@@ -198,6 +204,13 @@ function ML.ItemCatalog(query, rarity, area, focusedItem)
             quality=cached and cached.quality or (info[2]>=0 and info[2] or nil),quantity=0,sources={},catalogOnly=true}
     end
     for id in pairs(ML.db.itemWishlist or {}) do if not byID[id] then byID[id]=ML.CatalogItemInfo(id) end end
+    for id, gathered in pairs(ML.db.gatheredItems or {}) do
+        local item = byID[id] or ML.CatalogItemInfo(id)
+        item.gathered = gathered
+        item.name, item.link = gathered.name or item.name, gathered.link or item.link
+        item.icon, item.quality = gathered.icon or item.icon, gathered.quality or item.quality
+        byID[id] = item
+    end
     for _, mob in pairs(ML.db.mobs) do
         for id, drop in pairs(mob.items or {}) do
             if (drop.quantity or 0) > 0 then
@@ -234,6 +247,7 @@ function ML.ItemCatalog(query, rarity, area, focusedItem)
     for _, item in pairs(byID) do
         item.name = item.name or (item.link and item.link:match("%[(.-)%]")) or ("Item #" .. item.id)
         item.sortName=string.lower(item.name)
+        if item.gathered then item.last = math.max(item.last or 0, item.gathered.last or 0) end
         item.quality = ItemQuality(item)
         local matchesRarity = rarity == nil or rarity == "all" or item.quality == rarity or
             (rarity == "unknown" and item.quality == nil)
@@ -242,6 +256,11 @@ function ML.ItemCatalog(query, rarity, area, focusedItem)
             for _, source in ipairs(item.sources) do if ML.MatchesCatalogArea(source.mob,area) then matchesArea=true; break end end
             if not matchesArea then
                 matchesArea=ML.ItemMatchesCatalogArea(item.id,area)
+            end
+            if not matchesArea and item.gathered then
+                for _, point in pairs(item.gathered.sources) do
+                    if ML.RecordedPlaceMatchesArea(point, area) then matchesArea = true; break end
+                end
             end
         end
         if matchesArea and matchesRarity and (query=="" or string.find(item.sortName, query, 1, true) or string.find(tostring(item.id), query, 1, true)) then

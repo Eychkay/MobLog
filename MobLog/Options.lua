@@ -75,5 +75,22 @@ function ML.RegisterOptions()
         "After you click Prepare search, continue indexing missing item names and rarities while the window is closed or a search is active. "..
         "Uses at most one new item per timer turn and pauses in combat. The scan does not start automatically. "..
         "Use Pause to stop it. Indexed metadata is saved for this language. Enabled by default.")
+    local gatherPins = Settings.RegisterProxySetting(category, "MobLog_GatherPins", Settings.VarType.Boolean,
+        "Show gathering locations on the world map", true,
+        function() return ML.db.options.gatherPins ~= false end,
+        function(value)
+            ML.db.options.gatherPins = value
+            if ML.RefreshGatherPins then ML.RefreshGatherPins() end
+        end)
+    Settings.CreateCheckbox(category, gatherPins,
+        "Show small ore and herb markers where you gathered. Locations are approximate and show past gathers.")
+    local minimapGatherPins = Settings.RegisterProxySetting(category, "MobLog_MinimapGatherPins", Settings.VarType.Boolean,
+        "Show gathering locations on the minimap", true,
+        function() return ML.db.options.minimapGatherPins ~= false end,
+        function(value)
+            ML.db.options.minimapGatherPins = value
+            if ML.RefreshMinimapGatherPins then ML.RefreshMinimapGatherPins() end
+        end)
+    Settings.CreateCheckbox(category, minimapGatherPins, "Show nearby recorded ore and herb locations on the minimap.")
     Settings.RegisterAddOnCategory(category)
 end

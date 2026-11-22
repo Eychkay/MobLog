@@ -248,23 +248,74 @@ local function BuildMarker(map, canvas)
     return pin
 end
 
+local function HideGatherTooltip(pin)
+    if GameTooltip:IsOwned(pin) then GameTooltip:Hide() end
+end
+
+local function BuildGatherMarker(canvas)
+    local pin = CreateFrame("Frame", nil, canvas)
+    pin:SetSize(13, 13)
+    pin:SetFrameStrata("FULLSCREEN_DIALOG")
+    pin:SetFrameLevel(1)
+    pin:SetIgnoreParentAlpha(true)
+    local border = pin:CreateTexture(nil, "BACKGROUND")
+    border:SetAllPoints()
+    border:SetColorTexture(0.15, 0.10, 0.06, 1)
+    pin.icon = pin:CreateTexture(nil, "ARTWORK")
+    pin.icon:SetPoint("TOPLEFT", 1, -1)
+    pin.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+    pin.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    if pin.SetMouseClickEnabled then
+        pin:SetScript("OnEnter", function(self)
+            local point = self.mark
+            if not point then return end
+            ML.ShowGatherLocationTooltip(GameTooltip, self, point, "ANCHOR_RIGHT", self.mapID)
+        end)
+        pin:SetScript("OnLeave", HideGatherTooltip)
+        pin:SetMouseClickEnabled(false)
+    end
+    pin:SetScript("OnHide", HideGatherTooltip)
+    return pin
+end
+
 local function Attach()
     local map = WorldMapFrame
     if provider or not (map and map.AddCanvasClickHandler and map.AddDataProvider
         and map.GetCanvas and MapCanvasDataProviderMixin) then return end
     local canvas = map:GetCanvas()
     local pins, count = {}, 0
+    local gatheringPins, gatheringCount = {}, 0
     provider = CreateFromMixins(MapCanvasDataProviderMixin)
+    local function PositionPin(pin, width, height, scale)
+        pin:SetScale(1 / scale)
+        pin:ClearAllPoints()
+        pin:SetPoint("CENTER", canvas, "TOPLEFT", pin.mark.x * width * scale, -pin.mark.y * height * scale)
+    end
     function provider:PositionNotes()
         local width,height=canvas:GetSize()
         if width<=0 or height<=0 then return end
         local scale=map:GetCanvasScale() or 1
         if scale<=0 then scale=1 end
-        for i=1,count do
-            local pin=pins[i]
-            pin:SetScale(1/scale)
-            pin:ClearAllPoints()
-            pin:SetPoint("CENTER",canvas,"TOPLEFT",pin.mark.x*width*scale,-pin.mark.y*height*scale)
+        for i=1,count do PositionPin(pins[i],width,height,scale) end
+        for i=1,gatheringCount do PositionPin(gatheringPins[i],width,height,scale) end
+    end
+    function provider:SetGatherPins(mapID)
+        local previous = gatheringCount
+        gatheringCount = 0
+        if ML.db and ML.db.options.gatherPins ~= false then
+            for _, mark in ipairs(ML.GatherLocations(mapID)) do
+                gatheringCount = gatheringCount + 1
+                local pin = gatheringPins[gatheringCount] or BuildGatherMarker(canvas)
+                gatheringPins[gatheringCount] = pin
+                if pin.mark ~= mark then HideGatherTooltip(pin) end
+                pin.mark, pin.mapID = mark, mapID
+                pin.icon:SetTexture(ML.GatherIcons[mark.kind])
+                pin:Show()
+            end
+        end
+        for i = gatheringCount + 1, previous do
+            gatheringPins[i]:Hide()
+            gatheringPins[i].mark = nil
         end
     end
     function provider:RemoveAllData()
@@ -273,6 +324,7 @@ local function Attach()
             pins[i].npcID,pins[i].mark=nil,nil
         end
         count=0
+        self:SetGatherPins(nil)
     end
     function provider:RefreshAllData()
         self:RemoveAllData()
@@ -288,6 +340,7 @@ local function Attach()
                 end
             end
         end
+        self:SetGatherPins(mapID)
         self:PositionNotes()
     end
     provider.OnCanvasScaleChanged=provider.PositionNotes
@@ -308,6 +361,14 @@ local function Attach()
 end
 
 ML.RefreshWorldMapNotes = RenderChanges
+function ML.RefreshGatherPins(mapID)
+    local map = WorldMapFrame
+    if not provider or not map:IsVisible() then return end
+    local current = map:GetMapID()
+    if mapID and mapID ~= current then return end
+    provider:SetGatherPins(current)
+    provider:PositionNotes()
+end
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_LOGIN")
 events:RegisterEvent("ADDON_LOADED")

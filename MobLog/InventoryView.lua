@@ -276,7 +276,7 @@ function ML.BuildInventoryView(parent, ui)
     view.coverage = ui.Text(page, 11)
     view.coverage:SetPoint("TOPLEFT", 29, -583)
     view.coverage:SetSize(840, 17)
-    view.sources = ui.Button(detail, "View drop sources", 143, function() ML.OpenItem(view.selected) end)
+    view.sources = ui.Button(detail, "View sources", 143, function() ML.OpenItem(view.selected) end)
     view.sources:SetPoint("BOTTOMRIGHT", -18, 10)
     view.sources:SetHeight(24)
     local tooltip = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
@@ -430,6 +430,8 @@ function ML.BuildInventoryView(parent, ui)
         if not view.showGold then
             local title = selected and selected.name or "Select an item"
             local summary = selected and (selected.count .. " recorded · " .. #locations .. " locations") or ""
+            local gathered = selected and ML.db.gatheredItems and ML.db.gatheredItems[selected.id]
+            if gathered then summary = summary .. " · Gathering sources recorded" end
             DrawLocations(title, summary, locations)
             view.sources:SetEnabled(selected ~= nil)
         end

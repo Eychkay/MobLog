@@ -211,6 +211,7 @@ local function ReadLoot()
     -- repeated LOOT_READY/LOOT_OPENED and manual confirmation of the same corpse.
     -- Capture all volatile slot data once, before metadata reads or UI refreshes.
     local capture = ML.CaptureLoot()
+    if ML.ReadGatherLoot then ML.ReadGatherLoot(capture) end
     ML.Observe("target", true, false)
     for _, slot in ipairs(capture.slots) do
         local sources = slot.sources
