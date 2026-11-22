@@ -8,7 +8,7 @@ local gatherPins, mapSizes = {}, {}
 local displayed = 0
 local lastMap, lastX, lastY, lastAngle, lastRadius, lastWidth, lastHeight, lastSquare
 local ringTexture = "Interface\\AddOns\\MobLog\\Media\\GatherRing"
-local ringColors = { herb = {0.48, 0.94, 0.41}, ore = {0.60, 0.77, 1} }
+local ringColors = { herb = {0.48, 0.94, 0.41}, ore = {0.60, 0.77, 1}, fish = {0.38, 0.88, 0.90} }
 
 local function HideGatherPin(pin)
     pin:Hide()

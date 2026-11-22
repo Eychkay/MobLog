@@ -6,10 +6,10 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.9.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.19.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 For Forever, install **MobLog** and **MobLog_ForeverDB** from
-**MobLog-1.1.9-Forever.zip** into `_forever_/Interface/AddOns/`.
+**MobLog-1.19-Forever.zip** into `_forever_/Interface/AddOns/`.
 Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
@@ -114,11 +114,12 @@ entry point does not establish the NPC's exact floor or live location.
 
 ## Gathering locations
 
-Successful mining and herbalism gathers add small markers to the world map and
-minimap. The world map uses the recorded item's icon when MobLog can identify it.
+Mining, herbalism, and fishing add small markers to the world map and minimap.
+Fishing spots use your character's approximate position when fishing loot appears.
+The world map uses the recorded item's icon when MobLog can identify it.
 Minimap markers are hollow rings with a small item icon in the upper-right corner,
 leaving the center transparent for WoW's live tracking dots. Hover over a marker
-for approximate coordinates, gather count, and recorded item quantities. The two
+for approximate coordinates, gather or catch count, and recorded item quantities. The two
 maps have separate visibility settings under **Options → AddOns → MobLog**.
 
 Select a gathered item in the **Item catalog** to see its **Gathering sources**.
@@ -198,4 +199,4 @@ The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
 
-Current release: [Changelog](publishing/changelog-1.1.9.md) · [Release notes](publishing/release-notes-1.1.9.md).
+Current release: [Changelog](publishing/changelog-1.19.md) · [Release notes](publishing/release-notes-1.19.md).

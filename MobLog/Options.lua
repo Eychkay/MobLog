@@ -83,7 +83,7 @@ function ML.RegisterOptions()
             if ML.RefreshGatherPins then ML.RefreshGatherPins() end
         end)
     Settings.CreateCheckbox(category, gatherPins,
-        "Show small ore and herb markers where you gathered. Locations are approximate and show past gathers.")
+        "Show recorded ore, herb, and fishing spots. Markers indicate approximate locations of past gathers and catches.")
     local minimapGatherPins = Settings.RegisterProxySetting(category, "MobLog_MinimapGatherPins", Settings.VarType.Boolean,
         "Show gathering locations on the minimap", true,
         function() return ML.db.options.minimapGatherPins ~= false end,
@@ -91,6 +91,6 @@ function ML.RegisterOptions()
             ML.db.options.minimapGatherPins = value
             if ML.RefreshMinimapGatherPins then ML.RefreshMinimapGatherPins() end
         end)
-    Settings.CreateCheckbox(category, minimapGatherPins, "Show nearby recorded ore and herb locations on the minimap.")
+    Settings.CreateCheckbox(category, minimapGatherPins, "Show nearby recorded ore, herb, and fishing spots on the minimap.")
     Settings.RegisterAddOnCategory(category)
 end

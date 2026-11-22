@@ -14,10 +14,11 @@ function ML.CaptureLoot(count)
     for slot = 1, count do
         local sources = { GetLootSourceInfo(slot) }
         local link = ML.Public(GetLootSlotLink(slot))
-        local icon, name, _, _, quality = GetLootSlotInfo(slot)
+        local icon, name, quantity, _, quality = GetLootSlotInfo(slot)
         local id = type(link) == "string" and tonumber(link:match("item:(%d+)"))
         capture.slots[#capture.slots + 1] = { id = id, link = link,
-            icon = ML.Public(icon), name = ML.Public(name), quality = ML.Public(quality), sources = sources }
+            icon = ML.Public(icon), name = ML.Public(name), quantity = ML.Public(quantity),
+            quality = ML.Public(quality), sources = sources }
     end
     return capture
 end

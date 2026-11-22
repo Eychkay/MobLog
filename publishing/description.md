@@ -4,7 +4,7 @@
 
 Build your own bestiary as you explore Azeroth. Keep track of the creatures you meet, the loot you find, and the places worth coming back to.
 
-**New in 1.1.9.** Hover over an item to see which characters have it and where they stored it. Gathering markers use the recorded material's icon on both maps when MobLog can identify it.
+**New in 1.19.** Revisit your fishing spots on the world map and minimap, see what you caught and how much, and hover over an item to see which characters have it and where they stored it.
 
 [Choose your client on CurseForge](https://www.curseforge.com/wow/addons/moblog/files/all) · [See more screenshots](https://www.curseforge.com/wow/addons/moblog/gallery)
 
@@ -60,15 +60,15 @@ Use **Prepare search** to fetch missing item names and rarities in batches. Prep
 
 Filter by character, storage, or item type and check the last scan time next to each recorded location. **View drop sources** opens the catalog, and **In inventory** takes you back to your holdings. Item tooltips show each character's recorded total and how much is in bags, equipped, or on each recorded bank tab. The shared bank is listed once where available. The display is on by default and can be toggled with **Show inventory counts on item tooltips**. Each client keeps its own inventory history.
 
-<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Return to your gathering spots</h2>
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Return to your gathering and fishing spots</h2>
 
-Mine ore or gather herbs to mark the approximate spot on your world map and minimap. Hover over a marker to see when you last gathered there, how many gathers MobLog recorded, and how much of each item you found.
+Mine ore, gather herbs, or reel in a catch to mark the approximate spot on your world map and minimap. Hover over a marker to see your last gather or catch, the number of times you gathered or fished there, and how much of each item you found. Fishing spots use your character's position when the fishing loot appears.
 
 ![A tin vein marker on the world map showing two gathers, two Tin Ore, and two Coarse Stone](https://media.forgecdn.net/attachments/2258/57/moblog-gathering-spots-and-yields-jpg.jpg)
 
-Looking for a specific material? Open **Items → Item catalog → Gathering sources** to see where you gathered it. Pick a recorded spot to set a waypoint on a supported map.
+Looking for a specific material or fish? Open **Items → Item catalog → Gathering sources** to see where you found it. Pick a recorded spot to set a waypoint on a supported map.
 
-Minimap markers are hollow rings with a transparent center for WoW's live tracking dots. A small icon in the upper-right corner indicates the recorded ore or herb. The world-map marker uses the same item icon. Points without an identified item show a plain ring on the minimap and a profession icon on the world map. The two maps have separate marker toggles in MobLog's options.
+Minimap markers are hollow rings with a transparent center for WoW's live tracking dots. Fishing spots use turquoise rings. A small icon in the upper-right corner indicates a recorded material or catch, and the world-map marker uses the same item icon. Points without an identified item show a plain ring on the minimap and a profession icon on the world map. The two maps have separate marker toggles in MobLog's options.
 
 <h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Leave a note on the map</h2>
 
@@ -96,8 +96,8 @@ Use **Add note** to keep a separate reminder on an individual NPC variant, inclu
 
 | Client | Download | Folders to extract |
 | --- | --- | --- |
-| WoW Retail | `MobLog-1.1.9.zip` | `MobLog` and `MobLog_TrinityDB` |
-| WoW Forever | `MobLog-1.1.9-Forever.zip` | `MobLog` and `MobLog_ForeverDB` |
+| WoW Retail | `MobLog-1.19.zip` | `MobLog` and `MobLog_TrinityDB` |
+| WoW Forever | `MobLog-1.19-Forever.zip` | `MobLog` and `MobLog_ForeverDB` |
 
 Extract both folders into `_retail_/Interface/AddOns/` for Retail or `_forever_/Interface/AddOns/` for Forever, then fully restart WoW. Updating preserves your existing records and preferences within each client. Type `/moblog` or `/ml`, or click the MobLog minimap button to open your journal. The catalog is included and works without external addons. The interface is in English, and available creature, item, and location names follow your game client's language.
 

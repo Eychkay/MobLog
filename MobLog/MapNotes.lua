@@ -255,6 +255,7 @@ end
 local gatherProfessionIcons = {
     ore = "Interface\\Icons\\Trade_Mining",
     herb = "Interface\\Icons\\Trade_Herbalism",
+    fish = ML.GatherIcons.fish,
 }
 
 local function BuildGatherMarker(canvas)

@@ -10,7 +10,7 @@ import json
 import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='1.1.9'
+VERSION='1.19'
 
 
 def digest(path):

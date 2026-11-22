@@ -377,7 +377,7 @@ function ML.BuildItemBrowser(parent,ui)
         if entry.gatherPoint then
             local point = entry.gatherPoint
             row.icon:SetTexture(ML.GatherIcons[point.kind])
-            row.title:SetText(point.name or (point.kind == "ore" and "Ore deposit" or "Herb"))
+            row.title:SetText(ML.GatherLocationName(point))
             row.subtitle:SetText(string.format("%s · %.1f / %.1f · %d observed", point.zone, point.x * 100, point.y * 100, point.quantity))
             row:SetBackdropColor(0.075,0.06,0.04,1)
             return
