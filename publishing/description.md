@@ -1,196 +1,112 @@
-# MobLog — Your Personal Bestiary
+# MobLog · Your Personal Bestiary
 
-MobLog is a personal bestiary and inventory for **World of Warcraft Retail and Forever**. Record the creatures you encounter, browse them in a parchment album, follow your loot history, and save notes on creatures or on the world map. A bundled catalog shows possible drops and habitats alongside your own discoveries.
+**For World of Warcraft Retail and Forever**
 
-**New in 1.1.8 · Gathering locations.** Find your way back to the herbs and ore you have gathered. MobLog adds small markers to your world map and minimap. Hover over a marker to see the items and quantities recorded there, or open an item in the catalog to see its gathering locations.
+Build your own bestiary as you explore Azeroth. Keep track of the creatures you meet, the loot you find, and the places worth coming back to.
 
-## Discover and collect
+**New in 1.1.9.** Hover over an item to see which characters have it and where they stored it. Gathering markers use the recorded material's icon on both maps when MobLog can identify it.
 
-Track hostile creatures alongside friendly and neutral NPCs. Separate **Killed** and **Seen only** sections help you see what you have encountered and what you have defeated.
+[Choose your client on CurseForge](https://www.curseforge.com/wow/addons/moblog/files/all) · [See more screenshots](https://www.curseforge.com/wow/addons/moblog/gallery)
 
-Browse **Undiscovered** creatures alongside your recorded encounters. Catalog browsing never marks an NPC as seen or killed, and catalog entries may include older, unused or conditional variants.
+![A creature's parchment spread with an interactive 3D model and its field notes](https://media.forgecdn.net/attachments/2255/842/screenshot-2026-11-22-135641-png.png)
 
-Search by name, NPC ID or location, filter by classifications such as **Rare, Elite and Boss**, and narrow Mobs and Items through matching **world → region → area** dropdowns. Choose **Recent**, **Most kills**, **Most dropped** or **Alphabetical A–Z / Z–A** where applicable.
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Explore your bestiary</h2>
 
-## Browse your bestiary album
+Type `/ml` and open **Mobs → Album**. Pick a creature to see its interactive 3D model, recorded encounters, loot, and locations on a parchment double-page spread. Switch to **List** when you want to search or filter by name, NPC ID, classification, or area.
 
-Switch between **List** and **Album** on the Mobs tab. Filter album cards by **Hostile**, **Non-hostile**, **Undiscovered** or **Unknown attitude**. Known creature names are visible on undiscovered cards.
+Your journal keeps sightings and kills across characters on the same client. The bundled catalog adds known habitats and possible drops, shown separately from your encounters and personal loot statistics.
 
-Open a card to see the creature on a parchment double-page spread, with its interactive 3D model, loot, character records and locations. Use **Previous** and **Next** to browse the filtered album. **More details** opens the same spread from the list, and **Back to list** restores your selection, filters and scroll position.
+![Four creature cards in the bestiary album, with portraits, recorded kills, and discovery dates](https://media.forgecdn.net/attachments/2255/767/screenshot-2026-11-22-135653-png.png)
 
-## Turn encounters into milestones
+Browse hostile, friendly, and neutral NPCs. Check **Killed**, **Seen only**, or **Undiscovered** and filter by classifications such as **Rare**, **Elite**, or **Boss**. Use the location dropdowns to narrow your search by world, region, and area. Sort by name, recency, kills, or observed drops where available. The album has attitude filters and **Previous** and **Next** controls for browsing the filtered pages.
 
-Grow your collection with **account-wide kill ranks** for each grouped bestiary entry:
+Rotate, move, and zoom creature models, or use the model arrows to see discovered appearances. Variants with the same name and a shared discovered appearance use one list entry. **Back to list** restores your selection, filters, and scroll position after opening a detail spread. Use **Back**, **Reset filters**, and **Current area** in the footer to navigate between views.
 
-*   **Bronze:** 50 recorded kills.
-*   **Silver:** 250 recorded kills.
-*   **Gold:** 1,000 recorded kills.
-*   **Master:** 5,000 recorded kills.
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Earn discovery seals and kill ranks</h2>
 
-Unlock colored frames, rank badges and decorative details, follow your progress toward the next rank, and celebrate new milestones with a rank-up notification. **Your existing kill records already count.**
+Earn account-wide seals for finding distinct NPCs, encountering rares, elites and bosses, and recording kills by creature type. **Discoveries** has 29 seal series, with **410 seals in Retail** and **259 in Forever**. See your next goals, filter by category or completion, toggle notifications, and open the creature associated with a linked seal. Newly earned seals can record the date, character, and NPC involved.
 
-Filter your collection by rank and check the summary to see how many entries have reached each tier. Each entry counts once at its highest current rank. Newly earned ranks also save the date, visible on the creature entry and in its list tooltip.
+![Discoveries in Forever, showing completed parchment seals, upcoming goals, and category filters](https://media.forgecdn.net/attachments/2255/761/screenshot-2026-11-22-135805-png.png)
 
-The **Discoveries** tab adds account-wide seals across 29 series, with **410 seals in Retail** and **259 in Forever**. Earn them by discovering distinct NPCs, encountering rares, elites and bosses, or recording kills overall and by creature type. The journal shows your next goals and offers dropdowns for category and completion.
+<p><strong style="background-color:#2D231B;color:#CC753D;">Bronze · 50 kills</strong> &nbsp; <strong style="background-color:#252832;color:#C2D1E6;">Silver · 250 kills</strong> &nbsp; <strong style="background-color:#312718;color:#FFC43D;">Gold · 1,000 kills</strong> &nbsp; <strong style="background-color:#312718;color:#D4A34F;">Master · 5,000 kills</strong></p>
 
-Your existing records count toward seals. Newly earned seals can show the date, character and NPC involved. Click a linked seal to open that creature's entry, and toggle seal notifications from the Discoveries tab.
+Kill ranks apply to grouped bestiary entries and unlock frames and badges, with notifications and a date for newly earned ranks. Filter by rank or check the summary, which counts each entry at its highest tier. Previous records count toward both ranks and seals.
 
-## Keep your hunts in view
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Keep your hunt targets in view</h2>
 
-Pin creatures as **Hunt targets** to keep them together at the top of your list. Use **+** on an entry to pin it and **\*** to unpin it.
+Use **+** to pin a creature and **\*** to unpin it. The movable, collapsible tracker shows pinned creatures and their rank progress while the bestiary is closed. Left-click a creature in the tracker to open its entry or right-click to unpin it. Use the page controls to browse more targets, lock the tracker in settings, or toggle it with `/ml tracker`. It hides automatically when you have no pinned targets.
 
-The compact **hunt tracker** keeps your pinned creatures and their progress toward the next rank visible while you play—even with the bestiary closed.
+![The Mobs list with the plus button for pinning a creature and its progress toward Bronze](https://media.forgecdn.net/attachments/2255/771/screenshot-2026-11-22-135605-png.png)
 
-*   Drag the header to position it anywhere on your screen.
-*   Collapse it when you need more space.
-*   Left-click a creature to open its bestiary entry.
-*   Right-click a creature to unpin it.
-*   Browse additional targets using the page controls.
-*   Lock its position or disable it in the addon settings.
+Hover over a recorded NPC to see sightings, kill totals, rank progress, and hunt target status when the game exposes a readable NPC identity. NPC tooltip details and tracker settings are available under **Options → AddOns → MobLog**.
 
-The tracker hides automatically when no creatures are pinned. Your position and preferences are saved account-wide.
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Look up loot and build a wishlist</h2>
 
-## Your collection, right in the tooltip
+Each NPC variant keeps its own loot history. Compare **Observed drops** and **Not observed drops**, with quantities and personal drop percentages for your observations. In **Items → Item catalog**, search by name or ID, filter by rarity or area, and use **Observed sources** or **Possible sources** to jump to a creature. Retail and Forever have separate bundled catalogs. Retail links 31,375 item IDs to possible creature sources.
 
-Hover over a recorded NPC to see your **kill records, sightings, collection progress and hunt target status** directly in its tooltip.
+![The Item Catalog showing observed Wool Cloth sources, personal drop percentages, and the inventory count](https://media.forgecdn.net/attachments/2255/766/screenshot-2026-11-22-135710-png.png)
 
-Grouped NPCs show their combined collection totals. Tooltip details use your existing records and appear only when WoW exposes a readable NPC identity. You can disable this feature in the addon settings.
+Use **+** to add an item to your account-wide **Wishlist** and **\*** to remove it. Creatures associated with wishlisted items show an indicator. Ctrl-click supported item rows to open WoW's item preview.
 
-## Look back on your session
+Use **Prepare search** to fetch missing item names and rarities in batches. Preparation pauses during combat. With background scanning enabled, a manually started scan can keep running when you leave Items. Use **Pause** to stop it. You can search by item ID while the localized name is unavailable.
 
-Open the **Session** tab to review your adventures since login or UI reload:
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Find items across your characters</h2>
 
-*   Recorded kills, broken down by NPC.
-*   Newly discovered NPC types.
-*   Observed item drops and quantities.
-*   Newly unlocked collection ranks.
+**Which character has that item?** Search by name or ID under **Items → My inventory**. Select an item to see recorded quantities in each character's bags, equipped gear, and bank. Click the coin display for a breakdown of gold, silver, and copper by character, including the shared bank where available.
 
-The report is temporary; your account-wide bestiary remains saved.
+![My Inventory with a selected cloak, its recorded location, and the account coin display](https://media.forgecdn.net/attachments/2255/764/screenshot-2026-11-22-135736-png.png)
 
-## Explore your recorded areas
+*Log in on each character to record their bags, gear, and carried money. Open their bank to record its contents.*
 
-The **Areas** tab organizes your encounters by zone. Navigate through **worlds, regions and areas** using the breadcrumb dropdowns, or search for a recorded area by name.
+Filter by character, storage, or item type and check the last scan time next to each recorded location. **View drop sources** opens the catalog, and **In inventory** takes you back to your holdings. Item tooltips show each character's recorded total and how much is in bags, equipped, or on each recorded bank tab. The shared bank is listed once where available. The display is on by default and can be toggled with **Show inventory counts on item tooltips**. Each client keeps its own inventory history.
 
-See which creatures you have discovered, which you have killed locally and which you have only seen there. Review local kill counts alongside the account-wide ranks of creatures found in that area.
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Return to your gathering spots</h2>
 
-Click a creature to jump directly to its bestiary entry.
+Mine ore or gather herbs to mark the approximate spot on your world map and minimap. Hover over a marker to see when you last gathered there, how many gathers MobLog recorded, and how much of each item you found.
 
-This overview reflects **your own discoveries**, rather than a complete creature checklist or a claimed zone-completion percentage. Area names and hierarchy follow the information available from WoW.
+![A tin vein marker on the world map showing two gathers, two Tin Ore, and two Coarse Stone](https://media.forgecdn.net/attachments/2258/57/moblog-gathering-spots-and-yields-jpg.jpg)
 
-## Dungeon adventures, recorded through loot
+Looking for a specific material? Open **Items → Item catalog → Gathering sources** to see where you gathered it. Pick a recorded spot to set a waypoint on a supported map.
 
-**In dungeons and raids, MobLog records creatures only when you loot them.** Simply targeting a creature or defeating it without looting does not add an entry inside an instance.
+Minimap markers are hollow rings with a transparent center for WoW's live tracking dots. A small icon in the upper-right corner indicates the recorded ore or herb. The world-map marker uses the same item icon. Points without an identified item show a plain ring on the minimap and a profession icon on the world map. The two maps have separate marker toggles in MobLog's options.
 
-WoW’s API restrictions can make creature details unavailable while you are inside. Newly recorded entries may therefore appear with incomplete information and a **Data lookup pending** notice.
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Leave a note on the map</h2>
 
-**After you leave the instance and are out of combat, MobLog automatically queries the available missing details**—including names, creature types and classifications. There is normally no need to run a manual repair. Information that WoW does not provide may remain unknown.
+**Shift + right-click** the world map to mark a rare spawn, a route stop, or a place you want to revisit. Search by name or NPC ID to link a creature from the dropdown. Click the linked marker later to reopen its bestiary entry.
 
-## Take a closer look
+![A world map note in Silverpine Forest with the creature-link dropdown open](https://media.forgecdn.net/attachments/2255/827/moblog-kartennotiz-jpg.jpg)
 
-Explore your collection with creature portraits and interactive **3D models**. Rotate, move and zoom each model, or switch between appearances you have discovered for the same NPC.
+Right-click a marker to edit it or change its creature link. Shift + right-click an existing marker to remove it. Your current target is offered as a suggestion when linking a creature, and linked markers appear on its page under **Details & Places → Personal map marks**.
 
-NPCs with the same name and a shared discovered appearance are grouped into one list entry. Use the model arrows to explore their variants. Collection ranks use the group’s combined recorded kills, while each original NPC keeps its own loot statistics.
+Use **Add note** to keep a separate reminder on an individual NPC variant, including undiscovered catalog entries. The first line appears in the creature details. Open **Notes** to edit the full text.
 
-## Build your own loot history
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Explore your recorded areas</h2>
 
-Each original NPC variant has separate **Observed drops** and **Not observed drops** sections. See recorded quantities and **personal drop percentages** for your observations, alongside additional possibilities from the catalog.
+**Areas** groups your personal encounters by zone, with local kills and sightings alongside account-wide ranks. Creature entries show **Your discoveries** at your character's recorded encounter positions and **Known locations** from the catalog. Use **Your encounters** and **Known habitats** when filtering by location. Supported locations open the map and can place a waypoint when precise coordinates are available. Character breakdowns show who recorded sightings and kills.
 
-Each client uses its own bundled creature and loot catalog. The Retail catalog contains **31,375 item IDs linked to possible creature sources**. The Forever catalog uses separate creature, loot and location references. Catalog coverage is incomplete: a missing item or source does not mean a creature has no other drops. Availability can depend on difficulty, faction, character, game version or other conditions. Known loot contexts appear in tooltips; they are not exhaustive eligibility checks.
+![The Areas tab displaying Silverpine Forest, with local encounters and kill counts per creature](https://media.forgecdn.net/attachments/2255/762/screenshot-2026-11-22-135755-png.png)
 
-Open **Items → Item catalog** to search by name or ID, filter by rarity using **color-coded options**, and browse by area. Compare **Observed sources**, with your personal percentages, against **Possible sources** where you have not recorded the item yet. Click a creature to jump directly to its bestiary entry.
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Review your session</h2>
 
-Item names and rarities are cached for your client language. Use **Prepare search** to retrieve missing information explicitly in small batches. Preparation pauses in combat. With background scanning enabled (the default), a manually started scan continues after leaving Items or starting a search; use Pause to stop it. Otherwise, leaving Items or starting a search stops preparation. Item ID searches work without names, and some information may remain unavailable.
+**Session** tracks kills by NPC, new creature discoveries, observed loot quantities, and new ranks since login or UI reload. Open it with `/ml session`. The bestiary keeps your account-wide history after the session ends.
 
-Use **Ctrl-click** on supported item rows to open WoW's native item preview.
+![The Session report with recorded kills by NPC and the account-wide rank tooltip](https://media.forgecdn.net/attachments/2255/763/screenshot-2026-11-22-135745-png.png)
 
-## Find what you already own
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Install for your client</h2>
 
-Search by **item name or ID** and use the character and item type dropdowns to narrow the list. Select an item to see the quantity in each character's bags, equipped gear or bank, together with the last scan time. Open **View drop sources** to see where the item can drop. In the Item catalog, **In inventory** takes you back to the recorded locations.
+| Client | Download | Folders to extract |
+| --- | --- | --- |
+| WoW Retail | `MobLog-1.1.9.zip` | `MobLog` and `MobLog_TrinityDB` |
+| WoW Forever | `MobLog-1.1.9-Forever.zip` | `MobLog` and `MobLog_ForeverDB` |
 
-Click the **gold, silver and copper** display for the balance by character and shared bank. Enable **Show inventory counts on item tooltips** to check your recorded holdings while browsing items elsewhere in the game.
+Extract both folders into `_retail_/Interface/AddOns/` for Retail or `_forever_/Interface/AddOns/` for Forever, then fully restart WoW. Updating preserves your existing records and preferences within each client. Type `/moblog` or `/ml`, or click the MobLog minimap button to open your journal. The catalog is included and works without external addons. The interface is in English, and available creature, item, and location names follow your game client's language.
 
-Log in on each character to record their bags, equipped items and carried money. Open their bank to record its contents. The shared bank is counted once when available. Retail and Forever keep separate inventory records.
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">How tracking works</h2>
 
-## Find your gathering spots again
+Optional **target-only sightings** and automatic target-only tracking in supported capital cities and hubs are off by default. Background catalog preparation is on by default and pauses in combat.
 
-Mine ore or gather herbs to save the approximate location. Hover over a marker on either map for the last gather date, coordinates, number of gathers, and recorded quantities per item.
+Open-world recording depends on the information WoW exposes, so MobLog may miss some kills. In dungeons and raids, creatures are recorded only when you loot them. If an entry shows **Data lookup pending**, MobLog automatically looks up available names, types, and classifications after you leave the instance and leave combat.
 
-Nearby minimap icons turn into hollow rings when the matching WoW tracking mode is active, leaving room for the live tracking dot. The world map and minimap markers can be toggled separately in MobLog's options.
+Loot history reflects the loot window, while inventory reflects your last storage scan. Personal drop percentages come from your own recorded samples and include only looted encounters inside instances. Catalog coverage varies by client and can include older data. Possible drops can depend on factors such as difficulty, faction, and game version. Catalog browsing does not add personal progress.
 
-Select an item in **Items → Item catalog** and open **Gathering sources** to see its recorded locations. Click a source to set a waypoint on a supported map. Previously saved markers gain item quantities from new gathers.
-
-## Plan your next find
-
-Add items to your account-wide **Wishlist** with **+**, or remove them with **\***. Wishlisted items have their own section, and associated creatures show a wishlist indicator.
-
-Wishlist entries stay until you remove them. A loot observation records what appeared in the loot window. The inventory shows what was present the last time MobLog checked your storage.
-
-Use **Back**, **Reset filters** and **Current area** in the footer to move between creatures, items and areas. Back restores your recent views, including filters, selections and scroll positions.
-
-## Leave yourself a note
-
-Use **Add note** in the creature details to save a personal reminder for that NPC variant, even if you have only found it in the catalog. The first line appears in the creature details. Open **Notes** to edit the full text.
-
-On the world map, **Shift + right-click** to add a note at your cursor. To link a creature, search by name or NPC ID and choose it from the dropdown. Your current target is available as a suggestion.
-
-- **Left-click** a linked gold **!** marker to open its bestiary entry.
-- **Right-click** a marker to edit the note or change its creature link.
-- **Shift + right-click** a marker to remove it.
-
-Linked map notes also appear under **Details & Places → Personal map marks** in the creature entry.
-
-## Remember where—and with whom
-
-Creature-list subtitles distinguish **Seen in** (your latest personal encounter area) from **Found in** (a known habitat). Mobs and Items can filter **All locations**, **Your encounters** or **Known habitats** before you choose a world, region and area.
-
-Creature pages clearly separate **Your discoveries** from **Known locations**:
-
-*   **Your discoveries** are saved at your character's position when a sighting or kill was recorded.
-*   **Known locations** are available catalog spawn positions, shown separately and loaded only when needed. They never count as personal sightings, kills or discoveries.
-
-Click supported locations to open the world map. Verified coordinates can also place a waypoint. Some dungeon locations open the map without marking an exact floor or spawn. Unavailable coordinates and ambiguous floors are not guessed. Catalog positions may be incomplete, conditional or associated with moving creatures; they do not guarantee that an NPC is currently present.
-
-Your collection, wishlist and hunt targets are shared across characters using the same addon database. A character breakdown shows who recorded sightings and kills, with character names displayed in their **class colors**.
-
-## Made for everyday exploring
-
-*   English interface with a classic fantasy look.
-*   Collapsible creature groups, quick search and combined filters.
-*   On-demand list rendering, cached views and portrait loading for larger collections.
-*   Optional background catalog preparation after login, enabled by default and paused in combat.
-*   Minimap button for easy access.
-*   Optional **target-only sightings** to help reduce CPU usage and micro-stutters in crowded cities; disabled by default.
-*   Optional automatic target-only sightings in supported capital cities and major hubs; disabled by default.
-*   Configurable NPC tooltip details and hunt tracker.
-*   Catalog included; no external tracking addon or library required.
-
-Open **Options → AddOns → MobLog** to configure the addon.
-
-## Install for your client
-
-- **World of Warcraft Retail:** Extract both `MobLog` and `MobLog_TrinityDB` from `MobLog-1.1.8.zip` into `_retail_/Interface/AddOns/`.
-- **World of Warcraft Forever:** Extract both `MobLog` and `MobLog_ForeverDB` from `MobLog-1.1.8-Forever.zip` into `_forever_/Interface/AddOns/`.
-
-Fully restart WoW after installing or updating. Your existing records and preferences are preserved within each client.
-
-### Quick commands
-
-*   **`/moblog`** or **`/ml`** — Open your bestiary.
-*   **`/ml session`** — Open your session report.
-*   **`/ml tracker`** — Toggle the hunt tracker.
-
-## A note on tracking
-
-Your personal collection grows only through recorded encounters. The separate catalog supplies additional creature, loot and location information; it does not create personal progress and is not a complete creature or loot database.
-
-**In the open world**, death tracking is best effort within the game client’s API limits. It uses readable unit observations, with loot-based recording and manual confirmation as additional recording methods. Some kills may be missed, and recorded deaths do not prove a personal killing blow. **Inside dungeons and raids, tracking is loot-based only.**
-
-Loot history reflects items exposed by the loot window, rather than confirmed receipt in your bags. Drop percentages are calculated from your recorded samples and are **not official drop rates**. In instances, creatures you do not loot are not included in those samples.
-
-**Your discoveries** represent your character's position when an encounter was recorded. **Known locations** are separate catalog positions.
-
-## Open source
-
-MobLog is distributed under **GNU GPL version 2 or later (GPL-2.0-or-later)**, with third-party license and attribution notices retained in the package. **Source code:** [GitHub](https://github.com/Eychkay/MobLog)
-
-_Available for World of Warcraft Retail and World of Warcraft Forever. English interface; available creature, item and location names follow your game client's language, with catalog fallbacks where needed._
+MobLog is licensed under **GPL-2.0-or-later**. Third-party notices are included with the addon. [Source code on GitHub](https://github.com/Eychkay/MobLog)

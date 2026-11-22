@@ -131,6 +131,7 @@ local function ShowItemTooltip(button)
     if empty then
         tooltip:SetText(entry.name)
         tooltip:AddLine("Item #" .. entry.id, 0.7, 0.7, 0.7)
+        ML.AddInventoryItemTooltip(tooltip, entry.id)
     end
     tooltip:Show()
     if C_Item.RequestLoadItemDataByID and (empty or (C_Item.IsItemDataCachedByID and not C_Item.IsItemDataCachedByID(entry.id))) then
@@ -282,7 +283,7 @@ function ML.BuildInventoryView(parent, ui)
     local tooltip = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
     tooltip:SetPoint("BOTTOMLEFT", 24, 11)
     tooltip:SetSize(24, 24)
-    tooltip:SetScript("OnClick", function(self) ML.db.options.inventoryTooltip = self:GetChecked() and true or nil end)
+    tooltip:SetScript("OnClick", function(self) ML.db.options.inventoryTooltip = not not self:GetChecked() end)
     local tooltipLabel = ui.Text(page, 11)
     tooltipLabel:SetPoint("LEFT", tooltip, "RIGHT", 4, 0)
     tooltipLabel:SetText("Show inventory counts on item tooltips")
@@ -451,7 +452,7 @@ function ML.BuildInventoryView(parent, ui)
         end
     end
     page:SetScript("OnShow", function()
-        tooltip:SetChecked(ML.db.options.inventoryTooltip == true)
+        tooltip:SetChecked(ML.db.options.inventoryTooltip ~= false)
         view.owners:GenerateMenu()
         refresh()
     end)

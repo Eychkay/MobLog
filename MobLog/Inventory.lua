@@ -243,30 +243,57 @@ function ML.InventoryItemCount(id)
     return item and item.count or 0
 end
 
+function ML.AddInventoryItemTooltip(tooltip, id)
+    if not ML.db or not ML.db.options or ML.db.options.inventoryTooltip == false or type(id) ~= "number" then return end
+    local entry = ML.InventoryIndex()[id]
+    if not entry then return end
+
+    local owners, keys = {}, {}
+    for _, location in ipairs(entry.locations) do
+        local owner = location.owner
+        local holdings = owners[owner]
+        if not holdings then
+            holdings = { total = 0, storage = {} }
+            owners[owner] = holdings
+            keys[#keys + 1] = owner
+        end
+        local label = owner == "shared" and location.label or ML.InventoryLocationName(location)
+        holdings.total = holdings.total + location.count
+        holdings.storage[#holdings.storage + 1] = label .. " ×" .. location.count
+    end
+    table.sort(keys, function(a, b)
+        if a == character or b == character then return a == character end
+        if a == "shared" or b == "shared" then return b == "shared" end
+        local left, right = owners[a].total, owners[b].total
+        if left == right then return a < b end
+        return left > right
+    end)
+
+    tooltip:AddLine(" ")
+    tooltip:AddLine("MobLog inventory · " .. entry.count .. " recorded", 0.9, 0.77, 0.48)
+    for _, owner in ipairs(keys) do
+        local holdings = owners[owner]
+        local name = owner == "shared" and ML.InventoryBankName() or ML.CharacterName(owner)
+        tooltip:AddDoubleLine(name, tostring(holdings.total), 1, 1, 1, 1, 1, 1)
+        tooltip:AddLine("  " .. table.concat(holdings.storage, " · "), 0.83, 0.81, 0.75, true)
+    end
+end
+
 if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType and Enum.TooltipDataType.Item then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)
-        if tooltip ~= GameTooltip or not ML.db or not ML.db.options.inventoryTooltip then return end
+        if tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip then return end
         data = ML.Public(data)
-        local id = data and ML.Public(data.id)
-        local entry = id and ML.InventoryIndex()[id]
-        if not entry then return end
-        local owners, parts = {}, {}
-        for _, location in ipairs(entry.locations) do
-            owners[location.owner] = (owners[location.owner] or 0) + location.count
-        end
-        local keys = {}
-        for owner in pairs(owners) do keys[#keys + 1] = owner end
-        table.sort(keys, function(a, b)
-            if a == character or b == character then return a == character end
-            if a == "shared" or b == "shared" then return a == "shared" end
-            return owners[a] == owners[b] and a < b or owners[a] > owners[b]
-        end)
-        for i = 1, math.min(4, #keys) do
-            local owner = keys[i]
-            local label = owner == "shared" and ML.InventoryBankName() or ML.CharacterName(owner)
-            parts[#parts + 1] = label .. " " .. owners[owner]
-        end
-        if #keys > 4 then parts[#parts + 1] = "+" .. (#keys - 4) .. " more" end
-        tooltip:AddLine("MobLog inventory: " .. entry.count .. " recorded · " .. table.concat(parts, " · "), 0.9, 0.77, 0.48, true)
+        if type(data) == "table" then ML.AddInventoryItemTooltip(tooltip, ML.Public(data.id)) end
     end)
+else
+    local function AddLegacyItemTooltip(tooltip)
+        local _, link = tooltip:GetItem()
+        link = ML.Public(link)
+        ML.AddInventoryItemTooltip(tooltip, type(link) == "string" and tonumber(link:match("item:(%d+)")))
+    end
+    for _, tooltip in pairs({ GameTooltip, ItemRefTooltip }) do
+        if tooltip.GetItem and tooltip:HasScript("OnTooltipSetItem") then
+            tooltip:HookScript("OnTooltipSetItem", AddLegacyItemTooltip)
+        end
+    end
 end

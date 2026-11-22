@@ -7,35 +7,17 @@ local gatherTooltip, tooltipPoint, tooltipStamp, tooltipRevision
 local gatherPins, mapSizes = {}, {}
 local displayed = 0
 local lastMap, lastX, lastY, lastAngle, lastRadius, lastWidth, lastHeight, lastSquare
-local trackingSpells = { [2383] = "herb", [2580] = "ore" }
-local tracking = {}
 local ringTexture = "Interface\\AddOns\\MobLog\\Media\\GatherRing"
 local ringColors = { herb = {0.48, 0.94, 0.41}, ore = {0.60, 0.77, 1} }
-local ringRangeSquared = 100 * 100
 
-local function ReadGatherTracking()
-    wipe(tracking)
-    if not C_Minimap.GetNumTrackingTypes or not C_Minimap.GetTrackingInfo then return end
-    local names = {}
-    if C_Spell and C_Spell.GetSpellName then
-        for id, kind in pairs(trackingSpells) do
-            local name = ML.Public(C_Spell.GetSpellName(id))
-            if type(name) == "string" and name ~= "" then names[name] = kind end
-        end
-    end
-    local count = ML.Public(C_Minimap.GetNumTrackingTypes())
-    if type(count) ~= "number" then return end
-    for index = 1, count do
-        local info = ML.Public(C_Minimap.GetTrackingInfo(index))
-        if type(info) == "table" and ML.Public(info.active) == true then
-            local kind = trackingSpells[ML.Public(info.spellID)] or names[ML.Public(info.name)]
-            if kind then tracking[kind] = true end
-        end
-    end
+local function HideGatherPin(pin)
+    pin:Hide()
+    pin.icon:Hide()
+    pin.mark = nil
 end
 
 local function ClearGatherPins()
-    for i = 1, displayed do gatherPins[i]:Hide() end
+    for i = 1, displayed do HideGatherPin(gatherPins[i]) end
     displayed, lastMap = 0, nil
     if gatherTooltip then gatherTooltip:Hide() end
     tooltipPoint, tooltipStamp = nil, nil
@@ -47,7 +29,7 @@ local function UpdateGatherTooltip()
         (not Minimap.IsMouseMotionFocus or ML.Public(Minimap:IsMouseMotionFocus())) then
         for i = displayed, 1, -1 do
             local pin = gatherPins[i]
-            if ML.Public(pin:IsMouseOver()) then
+            if ML.Public(pin:IsMouseOver()) or (pin.icon:IsShown() and ML.Public(pin.icon:IsMouseOver())) then
                 hovered = pin.mark
                 break
             end
@@ -125,24 +107,24 @@ local function DrawGatherPins()
             local pin = gatherPins[displayed]
             if not pin then
                 pin = gatherLayer:CreateTexture(nil, "OVERLAY")
+                pin:SetTexture(ringTexture)
+                pin:SetSize(14, 14)
+                pin.icon = gatherLayer:CreateTexture(nil, "OVERLAY", nil, 1)
+                pin.icon:SetSize(8, 8)
+                pin.icon:SetPoint("BOTTOMLEFT", pin, "CENTER", 3, 3)
+                pin.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
                 gatherPins[displayed] = pin
             end
             pin.mark = point
-            local ring = tracking[point.kind] and east * east + north * north <= ringRangeSquared
-            if ring then
-                pin:SetTexture(ringTexture)
-                pin:SetVertexColor(unpack(ringColors[point.kind]))
-                pin:SetSize(14, 14)
-            else
-                pin:SetTexture(ML.GatherIcons[point.kind])
-                pin:SetVertexColor(1, 1, 1)
-                pin:SetSize(10, 10)
-            end
+            pin:SetVertexColor(unpack(ringColors[point.kind]))
+            local icon = ML.GetGatherLocationIcon(mapID, point)
+            pin.icon:SetTexture(icon)
+            pin.icon:SetShown(icon ~= nil)
             pin:SetPoint("CENTER", gatherLayer, "CENTER", dx * halfWidth, dy * halfHeight)
             pin:Show()
         end
     end
-    for i = displayed + 1, previous do gatherPins[i]:Hide() end
+    for i = displayed + 1, previous do HideGatherPin(gatherPins[i]) end
 end
 
 function ML.RefreshMinimapGatherPins()
@@ -169,12 +151,6 @@ local function BuildGatherLayer()
         end
     end)
     gatherLayer:SetScript("OnHide", ClearGatherPins)
-    gatherLayer:RegisterEvent("MINIMAP_UPDATE_TRACKING")
-    gatherLayer:SetScript("OnEvent", function()
-        ReadGatherTracking()
-        ML.RefreshMinimapGatherPins()
-    end)
-    ReadGatherTracking()
     ML.RefreshMinimapGatherPins()
 end
 

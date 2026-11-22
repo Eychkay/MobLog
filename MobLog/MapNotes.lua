@@ -252,6 +252,11 @@ local function HideGatherTooltip(pin)
     if GameTooltip:IsOwned(pin) then GameTooltip:Hide() end
 end
 
+local gatherProfessionIcons = {
+    ore = "Interface\\Icons\\Trade_Mining",
+    herb = "Interface\\Icons\\Trade_Herbalism",
+}
+
 local function BuildGatherMarker(canvas)
     local pin = CreateFrame("Frame", nil, canvas)
     pin:SetSize(13, 13)
@@ -309,7 +314,7 @@ local function Attach()
                 gatheringPins[gatheringCount] = pin
                 if pin.mark ~= mark then HideGatherTooltip(pin) end
                 pin.mark, pin.mapID = mark, mapID
-                pin.icon:SetTexture(ML.GatherIcons[mark.kind])
+                pin.icon:SetTexture(ML.GetGatherLocationIcon(mapID, mark) or gatherProfessionIcons[mark.kind])
                 pin:Show()
             end
         end

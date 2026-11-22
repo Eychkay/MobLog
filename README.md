@@ -6,10 +6,10 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.8.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.1.9.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 For Forever, install **MobLog** and **MobLog_ForeverDB** from
-**MobLog-1.1.8-Forever.zip** into `_forever_/Interface/AddOns/`.
+**MobLog-1.1.9-Forever.zip** into `_forever_/Interface/AddOns/`.
 Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
@@ -22,8 +22,10 @@ interactive model previews and navigation between creatures and observed items.
 Open **Items → My inventory** to search the recorded holdings of your characters
 by item name or ID. Filter by character or item type and select an item to see
 quantities, storage locations, and when they were checked. The coin balance opens
-the breakdown of recorded gold by character and shared bank. You can also enable
-inventory counts on item tooltips.
+the breakdown of recorded gold by character and shared bank. Item tooltips show
+totals for each recorded character and quantities by storage location, including
+recorded bank tabs. The shared bank is listed once. Toggle this under
+**Show inventory counts on item tooltips**.
 
 Bags, equipped items, and carried money are recorded during play. Open each
 character's bank to record its contents. Shared storage is included once when
@@ -113,10 +115,11 @@ entry point does not establish the NPC's exact floor or live location.
 ## Gathering locations
 
 Successful mining and herbalism gathers add small markers to the world map and
-minimap. Nearby minimap markers become hollow rings when the matching WoW
-tracking mode is active. Hover over a marker for its approximate coordinates,
-gather count, and recorded item quantities. The two maps have separate visibility
-settings under **Options → AddOns → MobLog**.
+minimap. The world map uses the recorded item's icon when MobLog can identify it.
+Minimap markers are hollow rings with a small item icon in the upper-right corner,
+leaving the center transparent for WoW's live tracking dots. Hover over a marker
+for approximate coordinates, gather count, and recorded item quantities. The two
+maps have separate visibility settings under **Options → AddOns → MobLog**.
 
 Select a gathered item in the **Item catalog** to see its **Gathering sources**.
 The source rows show the recorded amount at each location and can set waypoints
@@ -195,4 +198,4 @@ The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
 
-Current release: [Changelog](publishing/changelog-1.1.8.md) · [Release notes](publishing/release-notes-1.1.8.md).
+Current release: [Changelog](publishing/changelog-1.1.9.md) · [Release notes](publishing/release-notes-1.1.9.md).

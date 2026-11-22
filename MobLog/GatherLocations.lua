@@ -16,6 +16,12 @@ local spellKinds = {
 local spellNames = {}
 local gather, lastCast
 local empty = {}
+local iconsByPoint
+-- Metal & Stone includes incidental stone drops as well as ore.
+local stoneByproducts = {
+    [2835] = true, [2836] = true, [2838] = true, [7912] = true,
+    [12365] = true, [171840] = true, [171841] = true,
+}
 
 local function KindForSpell(id)
     if not id then return end
@@ -34,6 +40,46 @@ end
 
 local function GatherPointKey(mapID, point)
     return string.format("%d:%.7f:%.7f:%s", mapID, point.x, point.y, point.kind)
+end
+
+local function GatherResourceIcon(id, item)
+    local getInfo = C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
+    if not getInfo or stoneByproducts[id] then return end
+    local _, _, _, _, icon, classID, subclassID = getInfo(id)
+    classID, subclassID = ML.Public(classID), ML.Public(subclassID)
+    if classID ~= 7 then return end -- Trade Goods
+    icon = item.icon or ML.Public(icon)
+    if subclassID == 7 then return "ore", icon end -- Metal & Stone
+    if subclassID == 9 then return "herb", icon end
+end
+
+local function IndexGatherIcon(key, id, source, icon)
+    local current = iconsByPoint[key]
+    if not current or source.quantity > current.source.quantity
+        or (source.quantity == current.source.quantity and id <= current.id) then
+        iconsByPoint[key] = { id = id, source = source, icon = icon }
+    end
+end
+
+function ML.GetGatherLocationIcon(mapID, point)
+    if not iconsByPoint then
+        iconsByPoint = {}
+        for id, item in pairs(ML.db.gatheredItems or empty) do
+            local kind, icon = GatherResourceIcon(id, item)
+            if icon then
+                for key, source in pairs(item.sources) do
+                    if source.kind == kind then IndexGatherIcon(key, id, source, icon) end
+                end
+            end
+        end
+    end
+    local entry = iconsByPoint[GatherPointKey(mapID, point)]
+    return entry and entry.icon
+end
+
+local function RefreshGatherLocationPins(mapID)
+    if ML.RefreshGatherPins then ML.RefreshGatherPins(mapID) end
+    if ML.RefreshMinimapGatherPins then ML.RefreshMinimapGatherPins() end
 end
 
 local function SaveGatherLoot(cast)
@@ -57,13 +103,19 @@ local function SaveGatherLoot(cast)
             item.sources[key] = source
             source.name, source.last = point.name or source.name, cast.stamp
             source.quantity = source.quantity + delta
+            if iconsByPoint then
+                local kind, icon = GatherResourceIcon(id, item)
+                if icon and kind == source.kind then IndexGatherIcon(key, id, source, icon) end
+            end
             cast.saved[id], changed = loot.quantity, true
         end
     end
     if changed then
         ML.InvalidateItemCatalog()
+        RefreshGatherLocationPins(point.map)
         if ML.QueueRefresh then ML.QueueRefresh() end
     end
+    return changed
 end
 
 function ML.ReadGatherLoot(capture)
@@ -160,8 +212,6 @@ local function Record(kind, name)
     end
     nearest.name = name or nearest.name
     nearest.count, nearest.last = nearest.count + 1, time()
-    if ML.RefreshGatherPins then ML.RefreshGatherPins(place.map) end
-    if ML.RefreshMinimapGatherPins then ML.RefreshMinimapGatherPins() end
     return { map = place.map, x = nearest.x, y = nearest.y, kind = kind, name = nearest.name,
         zone = ML.Public(GetRealZoneText()) or "" }
 end
@@ -215,5 +265,7 @@ events:SetScript("OnEvent", function(_, event, unit, first, second, third)
     end
     gather.completed, gather.stamp = now, time()
     gather.point = Record(kind, gather.name)
-    SaveGatherLoot(gather)
+    if gather.point and not SaveGatherLoot(gather) then
+        RefreshGatherLocationPins(gather.point.map)
+    end
 end)
