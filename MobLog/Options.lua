@@ -40,6 +40,22 @@ function ML.RegisterOptions()
     Settings.CreateCheckbox(category, tooltipSetting,
         "Show recorded kills, sightings, collection rank progress and hunt target status for known NPCs. " ..
         "Uses existing records only. Hidden NPC identities cannot be matched, so restricted tooltips may not show MobLog details.")
+    local factionDropdown = Settings.CreateDropdown and Settings.CreateControlTextContainer
+    local itemTooltipFaction = Settings.RegisterProxySetting(category, "MobLog_ItemTooltipFaction", Settings.VarType.Boolean,
+        factionDropdown and "Inventory factions in item tooltips" or "Only show own faction in item tooltips", false,
+        function() return ML.db.options.inventoryTooltipOwnFaction == true end,
+        function(value) ML.db.options.inventoryTooltipOwnFaction = value end)
+    local itemTooltipHelp = "Choose which characters appear in MobLog's item tooltips. The shared bank is included in both modes."
+    if factionDropdown then
+        Settings.CreateDropdown(category, itemTooltipFaction, function()
+            local options = Settings.CreateControlTextContainer()
+            options:Add(false, "All factions")
+            options:Add(true, "Own faction")
+            return options:GetData()
+        end, itemTooltipHelp)
+    else
+        Settings.CreateCheckbox(category, itemTooltipFaction, itemTooltipHelp)
+    end
     local trackerSetting = Settings.RegisterProxySetting(category, "MobLog_HuntTracker", Settings.VarType.Boolean,
         "Show hunt tracker", true,
         function() return ML.db.options.huntTracker ~= false end,

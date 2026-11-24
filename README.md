@@ -6,10 +6,10 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.19.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.20.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 For Forever, install **MobLog** and **MobLog_ForeverDB** from
-**MobLog-1.19-Forever.zip** into `_forever_/Interface/AddOns/`.
+**MobLog-1.20-Forever.zip** into `_forever_/Interface/AddOns/`.
 Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
@@ -26,6 +26,12 @@ the breakdown of recorded gold by character and shared bank. Item tooltips show
 totals for each recorded character and quantities by storage location, including
 recorded bank tabs. The shared bank is listed once. Toggle this under
 **Show inventory counts on item tooltips**.
+
+**My inventory** defaults to **Own faction**. Choose **All factions** to include
+every recorded character. Character names use class colors, and opposing
+characters are labeled. Item tooltips default to **All factions** and have their
+own setting under **Options → AddOns → MobLog → Inventory factions in item
+tooltips**. Log in once on an older character to record their faction.
 
 Bags, equipped items, and carried money are recorded during play. Open each
 character's bank to record its contents. Shared storage is included once when
@@ -199,4 +205,4 @@ The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
 
-Current release: [Changelog](publishing/changelog-1.19.md) · [Release notes](publishing/release-notes-1.19.md).
+Current release: [Changelog](publishing/changelog-1.20.md) · [Release notes](publishing/release-notes-1.20.md).

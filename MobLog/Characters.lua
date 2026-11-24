@@ -11,6 +11,10 @@ function ML.UpdateCharacter()
     if type(realm) ~= "string" or realm == "" then realm = GetRealmName() end
     local character = ML.db.characters[guid] or {}
     character.name, character.realm, character.class = name, realm, class
+    local faction = UnitFactionGroup and ML.Public(UnitFactionGroup("player"))
+    if faction == "Alliance" or faction == "Horde" or faction == "Neutral" then
+        character.faction = faction
+    end
     ML.db.characters[guid] = character
     return guid
 end

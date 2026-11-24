@@ -144,10 +144,16 @@ local function Schedule()
     C_Timer.After(0.12, function() if pending then Flush() end end)
 end
 
-frame:SetScript("OnEvent", function(_, event)
+frame:SetScript("OnEvent", function(_, event, success)
     if event == "PLAYER_ENTERING_WORLD" then
         character = ML.UpdateCharacter()
         dirty.bags, dirty.equipment, dirty.money = true, true, true
+    elseif event == "NEUTRAL_FACTION_SELECT_RESULT" then
+        if ML.Public(success) == true then
+            character = ML.UpdateCharacter() or character
+            if ML.RefreshInventoryView then ML.RefreshInventoryView() end
+        end
+        return
     elseif event == "PLAYER_LOGOUT" then
         if next(dirty) then Flush() end
         return
@@ -175,12 +181,34 @@ frame:SetScript("OnEvent", function(_, event)
 end)
 for _, event in ipairs({ "PLAYER_ENTERING_WORLD", "PLAYER_LOGOUT", "PLAYER_REGEN_ENABLED", "PLAYER_EQUIPMENT_CHANGED",
     "BAG_UPDATE_DELAYED", "BANKFRAME_OPENED", "BANKFRAME_CLOSED", "PLAYERBANKSLOTS_CHANGED",
-    "PLAYER_ACCOUNT_BANK_TAB_SLOTS_CHANGED", "BANK_TABS_CHANGED", "BANK_TAB_SETTINGS_UPDATED", "PLAYER_MONEY", "ACCOUNT_MONEY" }) do
+    "PLAYER_ACCOUNT_BANK_TAB_SLOTS_CHANGED", "BANK_TABS_CHANGED", "BANK_TAB_SETTINGS_UPDATED", "PLAYER_MONEY", "ACCOUNT_MONEY",
+    "NEUTRAL_FACTION_SELECT_RESULT" }) do
     frame:RegisterEvent(event)
 end
 
 function ML.InventoryBankName()
     return ML.IsForever and "Account bank" or "Warband bank"
+end
+
+function ML.InventoryOwnerFaction(owner)
+    if owner == "shared" or owner == character then return true end
+    local characters = ML.db.characters
+    local saved, current = characters[owner], characters[character]
+    local faction = saved and saved.faction
+    local ownFaction = current and current.faction
+    if not faction then return false, "Faction unknown" end
+    if faction == ownFaction then return true end
+    if (faction == "Alliance" and ownFaction == "Horde") or (faction == "Horde" and ownFaction == "Alliance") then
+        return false, faction .. " (opposing faction)"
+    end
+    return false, faction
+end
+
+function ML.InventoryOwnerLabel(owner)
+    if owner == "shared" then return ML.InventoryBankName() end
+    local name = ML.CharacterName(owner)
+    local _, faction = ML.InventoryOwnerFaction(owner)
+    return faction and (name .. " |cffffa08a· " .. faction .. "|r") or name
 end
 
 function ML.InventoryLocationName(location)
@@ -248,19 +276,24 @@ function ML.AddInventoryItemTooltip(tooltip, id)
     local entry = ML.InventoryIndex()[id]
     if not entry then return end
 
-    local owners, keys = {}, {}
+    local owners, keys, total = {}, {}, 0
+    local ownFactionOnly = ML.db.options.inventoryTooltipOwnFaction == true
     for _, location in ipairs(entry.locations) do
         local owner = location.owner
-        local holdings = owners[owner]
-        if not holdings then
-            holdings = { total = 0, storage = {} }
-            owners[owner] = holdings
-            keys[#keys + 1] = owner
+        if not ownFactionOnly or ML.InventoryOwnerFaction(owner) then
+            local holdings = owners[owner]
+            if not holdings then
+                holdings = { total = 0, storage = {} }
+                owners[owner] = holdings
+                keys[#keys + 1] = owner
+            end
+            local label = owner == "shared" and location.label or ML.InventoryLocationName(location)
+            holdings.total = holdings.total + location.count
+            holdings.storage[#holdings.storage + 1] = label .. " ×" .. location.count
+            total = total + location.count
         end
-        local label = owner == "shared" and location.label or ML.InventoryLocationName(location)
-        holdings.total = holdings.total + location.count
-        holdings.storage[#holdings.storage + 1] = label .. " ×" .. location.count
     end
+    if total == 0 then return end
     table.sort(keys, function(a, b)
         if a == character or b == character then return a == character end
         if a == "shared" or b == "shared" then return b == "shared" end
@@ -270,11 +303,10 @@ function ML.AddInventoryItemTooltip(tooltip, id)
     end)
 
     tooltip:AddLine(" ")
-    tooltip:AddLine("MobLog inventory · " .. entry.count .. " recorded", 0.9, 0.77, 0.48)
+    tooltip:AddLine("MobLog inventory · " .. total .. " recorded", 0.9, 0.77, 0.48)
     for _, owner in ipairs(keys) do
         local holdings = owners[owner]
-        local name = owner == "shared" and ML.InventoryBankName() or ML.CharacterName(owner)
-        tooltip:AddDoubleLine(name, tostring(holdings.total), 1, 1, 1, 1, 1, 1)
+        tooltip:AddDoubleLine(ML.InventoryOwnerLabel(owner), tostring(holdings.total), 1, 1, 1, 1, 1, 1)
         tooltip:AddLine("  " .. table.concat(holdings.storage, " · "), 0.83, 0.81, 0.75, true)
     end
 end

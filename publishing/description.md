@@ -4,7 +4,7 @@
 
 Build your own bestiary as you explore Azeroth. Keep track of the creatures you meet, the loot you find, and the places worth coming back to.
 
-**New in 1.19.** Revisit your fishing spots on the world map and minimap, see what you caught and how much, and hover over an item to see which characters have it and where they stored it.
+**New in 1.20.** Find items on characters of your own faction first, or switch to all factions. Class colors identify your characters at a glance, and opposing factions are labeled in the inventory and item tooltips.
 
 [Choose your client on CurseForge](https://www.curseforge.com/wow/addons/moblog/files/all) · [See more screenshots](https://www.curseforge.com/wow/addons/moblog/gallery)
 
@@ -60,6 +60,8 @@ Use **Prepare search** to fetch missing item names and rarities in batches. Prep
 
 Filter by character, storage, or item type and check the last scan time next to each recorded location. **View drop sources** opens the catalog, and **In inventory** takes you back to your holdings. Item tooltips show each character's recorded total and how much is in bags, equipped, or on each recorded bank tab. The shared bank is listed once where available. The display is on by default and can be toggled with **Show inventory counts on item tooltips**. Each client keeps its own inventory history.
 
+**My inventory** starts on **Own faction**. Switch to **All factions** to include every recorded character. Item tooltips start on **All factions** and have a separate setting under **Options → AddOns → MobLog → Inventory factions in item tooltips**. The shared bank is available in either mode. Older records without a known faction remain visible under **All factions**. Log in once on those characters to record their faction.
+
 <h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Return to your gathering and fishing spots</h2>
 
 Mine ore, gather herbs, or reel in a catch to mark the approximate spot on your world map and minimap. Hover over a marker to see your last gather or catch, the number of times you gathered or fished there, and how much of each item you found. Fishing spots use your character's position when the fishing loot appears.
@@ -96,8 +98,8 @@ Use **Add note** to keep a separate reminder on an individual NPC variant, inclu
 
 | Client | Download | Folders to extract |
 | --- | --- | --- |
-| WoW Retail | `MobLog-1.19.zip` | `MobLog` and `MobLog_TrinityDB` |
-| WoW Forever | `MobLog-1.19-Forever.zip` | `MobLog` and `MobLog_ForeverDB` |
+| WoW Retail | `MobLog-1.20.zip` | `MobLog` and `MobLog_TrinityDB` |
+| WoW Forever | `MobLog-1.20-Forever.zip` | `MobLog` and `MobLog_ForeverDB` |
 
 Extract both folders into `_retail_/Interface/AddOns/` for Retail or `_forever_/Interface/AddOns/` for Forever, then fully restart WoW. Updating preserves your existing records and preferences within each client. Type `/moblog` or `/ml`, or click the MobLog minimap button to open your journal. The catalog is included and works without external addons. The interface is in English, and available creature, item, and location names follow your game client's language.
 

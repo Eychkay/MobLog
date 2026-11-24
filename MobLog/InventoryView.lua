@@ -197,19 +197,21 @@ function ML.RefreshInventoryView()
 end
 
 function ML.GetInventoryView()
-    return { query = view.search:GetText(), owner = view.owner, filter = view.filter,
+    return { query = view.search:GetText(), owner = view.owner, filter = view.filter, allFactions = view.allFactions,
         selected = view.selected, itemOffset = view.items:GetVerticalScroll(),
         locationOffset = view.locations:GetVerticalScroll(), showGold = view.showGold }
 end
 
 function ML.RestoreInventoryView(state)
     view.owner, view.filter = state.owner, state.filter or 1
+    view.allFactions = state.allFactions == true
     view.search:SetText(state.query or "")
     view.selected = state.selected
     view.showGold = state.showGold
+    refresh()
+    view.factions:GenerateMenu()
     view.owners:GenerateMenu()
     view.types:GenerateMenu()
-    refresh()
     ML.SetViewScroll(view.items, state.itemOffset)
     ML.SetViewScroll(view.locations, state.locationOffset)
 end
@@ -219,13 +221,24 @@ function ML.ResetInventoryFilters()
 end
 
 function ML.FocusInventoryItem(id)
-    ML.RestoreInventoryView({ query = tostring(id), selected = id })
+    local allFactions = view.allFactions
+    local entry = ML.InventoryIndex()[id]
+    if entry and not allFactions then
+        allFactions = true
+        for _, location in ipairs(entry.locations) do
+            if ML.InventoryOwnerFaction(location.owner) then
+                allFactions = false
+                break
+            end
+        end
+    end
+    ML.RestoreInventoryView({ query = tostring(id), selected = id, allFactions = allFactions })
 end
 
 function ML.BuildInventoryView(parent, ui)
     local page = CreateFrame("Frame", nil, parent)
     page:SetAllPoints()
-    view = { frame = page, filter = 1 }
+    view = { frame = page, filter = 1, allFactions = false }
     local function ResetList()
         view.items:SetVerticalScroll(0)
         view.locations:SetVerticalScroll(0)
@@ -233,12 +246,15 @@ function ML.BuildInventoryView(parent, ui)
     end
     view.search = ML.BuildItemSearchField(page, ui.Text)
     view.search:SetScript("OnTextChanged", function(_, userInput) if userInput then ResetList() end end)
+    view.factions = CreateFrame("DropdownButton", nil, page, "WowStyle1DropdownTemplate")
+    view.factions:SetPoint("TOPLEFT", 206, -197)
+    view.factions:SetWidth(129)
     view.owners = CreateFrame("DropdownButton", nil, page, "WowStyle1DropdownTemplate")
-    view.owners:SetPoint("TOPLEFT", 206, -197)
-    view.owners:SetWidth(238)
+    view.owners:SetPoint("TOPLEFT", 347, -197)
+    view.owners:SetWidth(214)
     view.types = CreateFrame("DropdownButton", nil, page, "WowStyle1DropdownTemplate")
-    view.types:SetPoint("TOPLEFT", 456, -197)
-    view.types:SetWidth(141)
+    view.types:SetPoint("TOPLEFT", 573, -197)
+    view.types:SetWidth(130)
     view.gold = CreateFrame("Button", nil, page, "BackdropTemplate")
     view.gold:SetSize(157, 27)
     view.gold:SetPoint("TOPRIGHT", -26, -197)
@@ -332,7 +348,11 @@ function ML.BuildInventoryView(parent, ui)
         local rule = row:CreateTexture(nil, "BORDER")
         rule:SetPoint("BOTTOMLEFT"); rule:SetPoint("BOTTOMRIGHT"); rule:SetHeight(1)
         rule:SetColorTexture(0.35, 0.20, 0.09, 0.28)
-        row.title = InventoryText(ui, row, 13, 0, -2, width - 157, 16)
+        row.nameBackground = row:CreateTexture(nil, "BACKGROUND")
+        row.nameBackground:SetPoint("TOPLEFT", 0, -2)
+        row.nameBackground:SetColorTexture(0.14, 0.10, 0.075, 1)
+        row.nameBackground:SetHeight(16)
+        row.title = InventoryText(ui, row, 13, 6, -2, width - 169, 16)
         row.subtitle = InventoryText(ui, row, 11, 0, -20, width, 16, muted)
         row.quantity = InventoryText(ui, row, 13, width - 151, -2, 151, 16)
         row.quantity:SetJustifyH("RIGHT")
@@ -354,25 +374,41 @@ function ML.BuildInventoryView(parent, ui)
         row:SetScript("OnLeave", function(self) if GameTooltip:IsOwned(self) then GameTooltip:Hide() end end)
         return row
     end, function(row, location)
-        row.title:SetText(OwnerName(location.owner))
+        local character = location.owner ~= "shared"
+        row.title:SetText(character and ML.CharacterName(location.owner) or ML.InventoryBankName())
+        row.nameBackground:SetWidth(math.min(row.title:GetStringWidth(), row.title:GetWidth()) + 12)
+        row.nameBackground:SetShown(character)
         local balance = not location.kind
         row.quantity:SetText(balance and FormatMoney(location.count) or location.count)
         local place = balance and (location.owner == "shared" and "Shared balance" or "Carried gold") or ML.InventoryLocationName(location)
-        row.subtitle:SetText(place .. " · " .. date("%Y-%m-%d %H:%M", location.stamp))
+        local _, faction = ML.InventoryOwnerFaction(location.owner)
+        local prefix = faction and ("|cff822a24" .. faction .. "|r · ") or ""
+        row.subtitle:SetText(prefix .. place .. " · " .. date("%Y-%m-%d %H:%M", location.stamp))
     end)
 
     local function SelectOwner(owner)
         view.owner = owner
         ResetList()
     end
+    local function SelectFaction(allFactions)
+        view.allFactions = allFactions
+        ResetList()
+        view.owners:GenerateMenu()
+    end
+    view.factions:SetupMenu(function(_, root)
+        root:CreateRadio("Own faction", function() return not view.allFactions end, function() SelectFaction(false) end)
+        root:CreateRadio("All factions", function() return view.allFactions end, function() SelectFaction(true) end)
+    end)
     view.owners:SetupMenu(function(_, root)
         root:CreateRadio("All characters and storage", function() return not view.owner end, function() SelectOwner(nil) end)
         local characters, shared = ML.InventoryCharacters()
         local owners = {}
-        for guid in pairs(characters) do owners[#owners + 1] = guid end
+        for guid in pairs(characters) do
+            if view.allFactions or ML.InventoryOwnerFaction(guid) then owners[#owners + 1] = guid end
+        end
         table.sort(owners, function(a, b) return OwnerName(a) < OwnerName(b) end)
         for _, guid in ipairs(owners) do
-            root:CreateRadio(OwnerName(guid), function(key) return view.owner == key end, SelectOwner, guid)
+            root:CreateRadio(ML.InventoryOwnerLabel(guid), function(key) return view.owner == key end, SelectOwner, guid)
         end
         if shared or ML.InventorySharedMoney() then
             root:CreateRadio(ML.InventoryBankName(), function(key) return view.owner == key end, SelectOwner, "shared")
@@ -389,6 +425,22 @@ function ML.BuildInventoryView(parent, ui)
     end)
 
     refresh = function()
+        local characters, shared = ML.InventoryCharacters()
+        local available, count, banks, unknown = { shared = true }, 0, 0, false
+        for guid, saved in pairs(characters) do
+            local own, faction = ML.InventoryOwnerFaction(guid)
+            if view.allFactions or own then
+                available[guid] = true
+                if saved.bags or saved.equipment then count = count + 1 end
+                if saved.bank then banks = banks + 1 end
+            elseif faction == "Faction unknown" then
+                unknown = true
+            end
+        end
+        if view.owner and not available[view.owner] then
+            view.owner = nil
+            view.owners:GenerateMenu()
+        end
         local query = view.search:GetText():match("^%s*(.-)%s*$"):lower()
         local numeric = query:match("^#?(%d+)$")
         local classes = filters[view.filter].classes
@@ -399,7 +451,7 @@ function ML.BuildInventoryView(parent, ui)
                 if (not classes or classes[class]) and (numeric or name:lower():find(query, 1, true)) then
                     local locations, count = {}, 0
                     for _, location in ipairs(item.locations) do
-                        if not view.owner or view.owner == location.owner then
+                        if available[location.owner] and (not view.owner or view.owner == location.owner) then
                             locations[#locations + 1] = location
                             count = count + location.count
                         end
@@ -420,7 +472,8 @@ function ML.BuildInventoryView(parent, ui)
         end
         view.items:SetEntries(entries)
         view.empty:SetShown(#entries == 0)
-        view.empty:SetText("No matching items in the recorded inventory.")
+        view.empty:SetText(view.allFactions and "No matching items in the recorded inventory." or
+            "No matching items for your faction and shared storage. Choose All factions to check other characters.")
         local locations = selected and selected.locations or {}
         table.sort(locations, function(a, b)
             if a.owner ~= b.owner then return OwnerName(a.owner) < OwnerName(b.owner) end
@@ -436,28 +489,25 @@ function ML.BuildInventoryView(parent, ui)
             DrawLocations(title, summary, locations)
             view.sources:SetEnabled(selected ~= nil)
         end
-        local characters, shared = ML.InventoryCharacters()
-        local count, banks = 0, 0
-        for _, saved in pairs(characters) do
-            if saved.bags or saved.equipment then count = count + 1 end
-            if saved.bank then banks = banks + 1 end
-        end
         if view.owner == "shared" then
             view.coverage:SetText(shared and (ML.InventoryBankName() .. " checked " .. date("%Y-%m-%d %H:%M", shared.stamp)) or "Shared bank not yet recorded.")
         elseif view.owner then
             local bank = characters[view.owner] and characters[view.owner].bank
             view.coverage:SetText(bank and ("Personal bank checked " .. date("%Y-%m-%d %H:%M", bank.stamp)) or "Personal bank not yet recorded. Open it on this character.")
         else
-            view.coverage:SetText(string.format("%d characters recorded · %d personal banks checked · Log in on each character and open their bank to add its contents.", count, banks))
+            local hint = unknown and "Log in on older characters to record their faction." or
+                "Log in on each character and open their bank to add its contents."
+            view.coverage:SetText(string.format("%d characters in view · %d personal banks checked · %s", count, banks, hint))
         end
     end
     page:SetScript("OnShow", function()
         tooltip:SetChecked(ML.db.options.inventoryTooltip ~= false)
-        view.owners:GenerateMenu()
         refresh()
+        view.owners:GenerateMenu()
     end)
     page:SetScript("OnHide", function()
         view.search:ClearFocus()
+        view.factions:CloseMenu()
         view.owners:CloseMenu()
         view.types:CloseMenu()
     end)
