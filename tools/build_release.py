@@ -10,7 +10,7 @@ import json
 import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='1.20'
+VERSION='1.21'
 
 
 def digest(path):
@@ -113,7 +113,7 @@ def build(with_source=False,client='retail',check_only=False):
     commit=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True)
     source_url='https://github.com/Eychkay/MobLog'
     if commit.returncode==0: source_url+='/tree/'+commit.stdout.strip()
-    release={'source_url':source_url,'client':client,'version':VERSION,'date':'2026-11-24','previous_release':'1.19',
+    release={'source_url':source_url,'client':client,'version':VERSION,'date':'2026-11-25','previous_release':'1.20',
              'license':'GPL-2.0-or-later','runtime_files':len(runtime),'source_files':len(source) if with_source else None,
              'archives':{path.name:{'bytes':path.stat().st_size,'sha256':digest(path)} for path in archives}}
     (ROOT/'publishing'/f'release-manifest-{VERSION}{suffix}.json').write_text(json.dumps(release,indent=2)+'\n',encoding='utf-8')

@@ -113,6 +113,7 @@ local function OpenLocation(place)
     if not ok then ML.Print("Could not open this location's map.") end
     return ok
 end
+ML.OpenLocation = OpenLocation
 
 function ML.ResolveKnownLocation(place)
     if place.resolved or (place.retryAfter and GetTime()<place.retryAfter) then return place end
@@ -250,6 +251,8 @@ function ML.BuildLocationBrowser(parent,scroll,ui,onPin)
                             GameTooltip:AddLine("Personal map mark",0.92,0.76,0.45)
                             if place.label~="" then GameTooltip:AddLine(place.label:gsub("|","||"),0.85,0.82,0.74,true) end
                             GameTooltip:AddLine("Shift + right-click to remove.",0.85,0.82,0.74,true)
+                        elseif place.shared then
+                            GameTooltip:AddLine("Imported creature location",0.55,0.76,0.94)
                         elseif place.known then
                             GameTooltip:AddLine("Known spawn point",0.55,0.76,0.94)
                             GameTooltip:AddLine("Catalog position, separate from your discoveries. This is not a live NPC location.",0.85,0.82,0.74,true)
@@ -278,11 +281,13 @@ function ML.BuildLocationBrowser(parent,scroll,ui,onPin)
                     local waypoint=CanWaypoint(place)
                     if place.marker then
                         row.title:SetText(place.label~="" and (place.label:gsub("|","||")) or label)
+                    elseif place.shared then
+                        row.title:SetText(label)
                     else
                         row.title:SetText(label..(place.known and "" or (" · "..place.kind.." · "..((place.count or 0)>0 and ("×"..place.count) or "Historic point"))))
                     end
                     local map=LocationMap(place)
-                    row.coords:SetText((place.marker and (place.zone.." · ") or place.known and "Known spawn point · " or "Your discovery · ")..(pin and (string.format("%.1f / %.1f",place.x*100,place.y*100)..(waypoint and " · Click to pin" or " · Click to open map")) or
+                    row.coords:SetText((place.marker and (place.zone.." · ") or place.shared and "Imported · " or place.known and "Known spawn point · " or "Your discovery · ")..(pin and (string.format("%.1f / %.1f",place.x*100,place.y*100)..(waypoint and " · Click to pin" or " · Click to open map")) or
                         (map and "Click to open map · Exact position unavailable" or "Map coordinates unavailable")))
                     row.pin:SetAlpha((waypoint or map) and 1 or 0.3)
                     if place.known then row:SetBackdropColor(0.035,0.055,0.075,1); row.title:SetTextColor(0.55,0.76,0.94)
@@ -316,6 +321,11 @@ function ML.BuildLocationBrowser(parent,scroll,ui,onPin)
         local marks=ML.NPCMapMarks(mob.id)
         Section("marks","Personal map marks",#marks,marks,"Shift + right-click the world map to add and link a note.")
         Section("personal","Your discoveries",#personal,personal,"No personal encounter locations recorded.")
+        local reports={}
+        for _,r in ipairs(ML.Share.Groups("M")[mob.id] or {}) do
+            if r.map then reports[#reports+1]={map=r.map,x=r.x,y=r.y,zone=ML.Share.Zone(r.map),sub="",shared=true} end
+        end
+        if #reports>0 then Section("shared","Imported creature locations",#reports,reports) end
         Section("known","Known locations",count,known,ML.CatalogUnavailableText() or "No spawn locations are known for this NPC.")
         parent:SetHeight(math.max(140,offset)); ML.SetViewScroll(scroll,scroll:GetVerticalScroll()); self:Draw()
     end

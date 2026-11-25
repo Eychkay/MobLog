@@ -137,6 +137,7 @@ local function ReadItemInfo(id)
         local wasKnown=Complete(infoCache[id])
         -- Replace rather than mutate the published snapshot's metadata table.
         infoCache[id]={name=name,link=link,icon=icon,quality=quality}
+        if ML.SharingItemResolved then ML.SharingItemResolved(id) end
         pending[id]=nil
         MarkResolved(id)
         if not wasKnown and not preparation and scanOutcome then publishAfterResponse=true end
@@ -167,6 +168,12 @@ local function RequestItemInfo(id)
     local info=ReadItemInfo(id)
     if not info and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID,id) end
     return info
+end
+function ML.LocalItemName(id, request)
+    EnsureCache()
+    local info = infoCache[id]
+    if not Complete(info) and request then info = RequestItemInfo(id) end
+    return info and info.name
 end
 local function ItemQuality(item)
     local info=published[item.id]
@@ -204,6 +211,16 @@ function ML.ItemCatalog(query, rarity, area, focusedItem)
             quality=cached and cached.quality or (info[2]>=0 and info[2] or nil),quantity=0,sources={},catalogOnly=true}
     end
     for id in pairs(ML.db.itemWishlist or {}) do if not byID[id] then byID[id]=ML.CatalogItemInfo(id) end end
+    for _,kind in ipairs({"D","gatherItems"}) do
+        for id, reports in pairs(ML.Share.Groups(kind)) do
+            local item=byID[id] or ML.CatalogItemInfo(id)
+            byID[id]=item
+            if kind=="D" then
+                item.sharedDrops=reports
+                if item.name==("Item #"..id) then item.name=reports[1].itemName or item.name end
+            else item.sharedGathers=reports end
+        end
+    end
     for id, gathered in pairs(ML.db.gatheredItems or {}) do
         local item = byID[id] or ML.CatalogItemInfo(id)
         item.gathered = gathered
@@ -260,6 +277,16 @@ function ML.ItemCatalog(query, rarity, area, focusedItem)
             if not matchesArea and item.gathered then
                 for _, point in pairs(item.gathered.sources) do
                     if ML.RecordedPlaceMatchesArea(point, area) then matchesArea = true; break end
+                end
+            end
+            if not matchesArea then
+                for _,r in ipairs(item.sharedGathers or {}) do
+                    if ML.RecordedPlaceMatchesArea({map=r.map,zone=ML.Share.Zone(r.map),sub=""},area) then matchesArea=true; break end
+                end
+            end
+            if not matchesArea then
+                for _,r in ipairs(item.sharedDrops or {}) do
+                    if ML.MatchesCatalogArea(ML.GetMob(r.npc),area) then matchesArea=true; break end
                 end
             end
         end

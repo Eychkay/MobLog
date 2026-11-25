@@ -130,7 +130,9 @@ end
 function ML.RefreshMinimapGatherPins()
     if not gatherLayer then return end
     lastMap = nil
-    local enabled = ML.db.options.minimapGatherPins ~= false and ML.db.gatherLocations and next(ML.db.gatherLocations) ~= nil
+    local enabled = ML.db.options.minimapGatherPins ~= false and
+        (next(ML.db.gatherLocations or {}) ~= nil or
+        (ML.db.options.sharedGatherPins ~= false and next(ML.Share.Groups("G")) ~= nil))
     gatherLayer:SetShown(enabled == true)
     if enabled and gatherLayer:IsVisible() then DrawGatherPins() end
 end

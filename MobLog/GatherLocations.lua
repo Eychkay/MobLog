@@ -37,7 +37,8 @@ end
 
 function ML.GatherLocations(mapID)
     local maps = ML.db and ML.db.gatherLocations
-    return maps and maps[mapID] or empty
+    local own = maps and maps[mapID] or empty
+    return ML.db and ML.Share.MapPoints(mapID, own) or own
 end
 
 function ML.GatherLocationName(point)
@@ -47,6 +48,7 @@ end
 local function GatherPointKey(mapID, point)
     return string.format("%d:%.7f:%.7f:%s", mapID, point.x, point.y, point.kind)
 end
+ML.GatherPointKey = GatherPointKey
 
 local function GatherResourceIcon(id, item)
     local getInfo = C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
@@ -69,7 +71,7 @@ local function IndexGatherIcon(key, id, source, icon)
     end
 end
 
-function ML.GetGatherLocationIcon(mapID, point)
+local function GatherIconEntry(mapID, point)
     if not iconsByPoint then
         iconsByPoint = {}
         for id, item in pairs(ML.db.gatheredItems or empty) do
@@ -81,11 +83,25 @@ function ML.GetGatherLocationIcon(mapID, point)
             end
         end
     end
-    local entry = iconsByPoint[GatherPointKey(mapID, point)]
+    return iconsByPoint[GatherPointKey(mapID, point)]
+end
+
+function ML.GetGatherResourceID(mapID, point)
+    local entry = GatherIconEntry(mapID, point)
+    return entry and entry.id
+end
+
+function ML.GetGatherLocationIcon(mapID, point)
+    if point.shared then
+        local getIcon = C_Item and C_Item.GetItemIconByID or GetItemIcon
+        return point.resource and getIcon and ML.Public(getIcon(point.resource))
+    end
+    local entry = GatherIconEntry(mapID, point)
     return entry and entry.icon
 end
 
 local function RefreshGatherLocationPins(mapID)
+    ML.Share.InvalidateMap(mapID)
     if ML.RefreshGatherPins then ML.RefreshGatherPins(mapID) end
     if ML.RefreshMinimapGatherPins then ML.RefreshMinimapGatherPins() end
 end
@@ -163,6 +179,7 @@ end
 function ML.ShowGatherLocationTooltip(tooltip, owner, point, anchor, mapID)
     tooltip:SetOwner(owner, anchor)
     tooltip:SetText(ML.GatherLocationName(point))
+    if point.shared then ML.Share.GatherTooltip(tooltip, point); return end
     local fishing = point.kind == "fish"
     tooltip:AddLine((fishing and "Last fished " or "Last gathered ") .. date("%Y-%m-%d", point.last), 1, 1, 1)
     tooltip:AddLine(string.format("%.1f / %.1f · Approximate location", point.x * 100, point.y * 100), 0.82, 0.76, 0.66)
@@ -193,6 +210,23 @@ function ML.ShowGatherLocationTooltip(tooltip, owner, point, anchor, mapID)
     tooltip:Show()
 end
 
+local radii = {}
+function ML.GatherMatchRadius(map)
+    local cached = radii[map]
+    if cached then return cached[1], cached[2] end
+    if C_Map and C_Map.GetMapWorldSize then
+        local ok, width, height = pcall(C_Map.GetMapWorldSize,map)
+        if not ok then return 0.0015, 0.0015 end
+        width, height = ML.Public(width), ML.Public(height)
+        if type(width) == "number" and width > 0 and type(height) == "number" and height > 0 then
+            cached = {math.min(14 / width, 0.004), math.min(14 / height, 0.004)}
+            radii[map] = cached
+            return cached[1], cached[2]
+        end
+    end
+    return 0.0015, 0.0015
+end
+
 local function Record(kind, name)
     if not ML.db or ML.InstanceLootOnly() or not C_Map or not C_Map.GetBestMapForUnit or not C_Map.GetPlayerMapPosition then return end
     local mapID = ML.Public(C_Map.GetBestMapForUnit("player"))
@@ -206,15 +240,7 @@ local function Record(kind, name)
     local locations = ML.db.gatherLocations[place.map] or {}
     ML.db.gatherLocations[place.map] = locations
 
-    local width, height
-    if C_Map.GetMapWorldSize then
-        width, height = C_Map.GetMapWorldSize(place.map)
-        width, height = ML.Public(width), ML.Public(height)
-    end
-    local xRadius, yRadius = 0.0015, 0.0015
-    if type(width) == "number" and width > 0 and type(height) == "number" and height > 0 then
-        xRadius, yRadius = math.min(14 / width, 0.004), math.min(14 / height, 0.004)
-    end
+    local xRadius, yRadius = ML.GatherMatchRadius(place.map)
 
     local nearest, distance = nil, 1
     for _, point in ipairs(locations) do

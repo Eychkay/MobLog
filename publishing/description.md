@@ -4,7 +4,7 @@
 
 Build your own bestiary as you explore Azeroth. Keep track of the creatures you meet, the loot you find, and the places worth coming back to.
 
-**New in 1.20.** Find items on characters of your own faction first, or switch to all factions. Class colors identify your characters at a glance, and opposing factions are labeled in the inventory and item tooltips.
+**New in 1.21.** Share recorded loot sources, creature locations, and gathering spots directly with another MobLog player in game. The recipient can preview the finds, choose what to keep, and undo an import later.
 
 [Choose your client on CurseForge](https://www.curseforge.com/wow/addons/moblog/files/all) · [See more screenshots](https://www.curseforge.com/wow/addons/moblog/gallery)
 
@@ -21,6 +21,20 @@ Your journal keeps sightings and kills across characters on the same client. The
 Browse hostile, friendly, and neutral NPCs. Check **Killed**, **Seen only**, or **Undiscovered** and filter by classifications such as **Rare**, **Elite**, or **Boss**. Use the location dropdowns to narrow your search by world, region, and area. Sort by name, recency, kills, or observed drops where available. The album has attitude filters and **Previous** and **Next** controls for browsing the filtered pages.
 
 Rotate, move, and zoom creature models, or use the model arrows to see discovered appearances. Variants with the same name and a shared discovered appearance use one list entry. **Back to list** restores your selection, filters, and scroll position after opening a detail spread. Use **Back**, **Reset filters**, and **Current area** in the footer to navigate between views.
+
+<h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Share finds with another player</h2>
+
+Both players need MobLog, must be online, and must use the same WoW edition. Open **Share finds** from the main window or type `/ml share`.
+
+1. In **Send finds**, select recorded item and loot sources, creatures and encounter locations, or ore, herb, and fishing spots. Click a category heading to expand it. Select individual rows, use a category checkbox, or filter by name or zone and click **Select shown**.
+2. Enter the recipient's character name. **Retail** uses a single character name, with **Name-Realm** for a different realm. **Forever** uses a first and last name separated by a space, for example **Asha Brightvale**.
+3. Optionally enter a package name and enable **Include gathered quantities**. Click **Offer to player**. You can also open **Share finds** from a selected item in the item catalog or Alt + right-click a personal gathering marker on the world map.
+4. The recipient opens **Transfers**, checks the sender and number of finds, and clicks **Accept**. Both players can follow the progress or cancel the transfer. **Transfers with more than 1,000 finds may take a while.** Keep both characters logged in until delivery finishes.
+5. After delivery, the recipient clicks **Review finds**. The preview shows new finds and counts records already known. Uncheck any entries you want to leave out and click **Import selected**. Hover over rows to inspect IDs and any included quantities.
+
+Find imported loot sources in **Items → Item catalog → Imported sources**, creature coordinates in **Details & Places → Imported creature locations**, and gathering spots on the world map and minimap when enabled. Your personal encounter, loot, and gathering statistics retain their own totals.
+
+To remove specific imports, open **Imported finds**, select the rows, and click **Remove → Confirm removal**. To undo an entire package, choose it from the dropdown and click **Undo this import → Confirm removal**.
 
 <h2 style="background-color:#2D2119;color:#F4D489;border:1px solid #AE7945;padding-left:12px;">Earn discovery seals and kill ranks</h2>
 
@@ -98,8 +112,8 @@ Use **Add note** to keep a separate reminder on an individual NPC variant, inclu
 
 | Client | Download | Folders to extract |
 | --- | --- | --- |
-| WoW Retail | `MobLog-1.20.zip` | `MobLog` and `MobLog_TrinityDB` |
-| WoW Forever | `MobLog-1.20-Forever.zip` | `MobLog` and `MobLog_ForeverDB` |
+| WoW Retail | `MobLog-1.21.zip` | `MobLog` and `MobLog_TrinityDB` |
+| WoW Forever | `MobLog-1.21-Forever.zip` | `MobLog` and `MobLog_ForeverDB` |
 
 Extract both folders into `_retail_/Interface/AddOns/` for Retail or `_forever_/Interface/AddOns/` for Forever, then fully restart WoW. Updating preserves your existing records and preferences within each client. Type `/moblog` or `/ml`, or click the MobLog minimap button to open your journal. The catalog is included and works without external addons. The interface is in English, and available creature, item, and location names follow your game client's language.
 

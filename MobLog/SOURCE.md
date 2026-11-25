@@ -2,7 +2,7 @@
 
 Public source: https://github.com/Eychkay/MobLog
 
-Source version: **1.20**. The release manifest links its exact repository commit. The Retail package
+Source version: **1.21**. The release manifest links its exact repository commit. The Retail package
 contains the `MobLog` and `MobLog_TrinityDB` directories. Both contain readable,
 editable Lua source and their required license and attribution notices.
 

@@ -6,16 +6,46 @@ includes an optional bundled creature/loot catalog for discoveries still ahead.
 
 ## Install and open
 
-Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.20.zip** into
+Copy **MobLog** and **MobLog_TrinityDB** from **MobLog-1.21.zip** into
 World of Warcraft/_retail_/Interface/AddOns/. Restart WoW after updating.
 For Forever, install **MobLog** and **MobLog_ForeverDB** from
-**MobLog-1.20-Forever.zip** into `_forever_/Interface/AddOns/`.
+**MobLog-1.21-Forever.zip** into `_forever_/Interface/AddOns/`.
 Use the package matching your client. Each package contains two addon folders. No external addon or library is
 needed. Personal records and preferences are preserved.
 
 Open with /moblog, /ml or the minimap button. The Mobs, Items, Session and Areas
 pages offer search, sorting, account-wide character breakdowns, class colors,
 interactive model previews and navigation between creatures and observed items.
+
+## Share finds in game
+
+Open **Share finds** in the main window or type `/ml share`. Both players need
+MobLog on the same WoW edition and must stay online during the transfer.
+
+1. In **Send finds**, choose recorded loot sources, creatures and encounter
+   locations, or ore, herb, and fishing spots. Use **Find or zone** to narrow the
+   list and **Select shown** to select the matches. Click a category heading to
+   expand it, or use its checkbox to select the whole category.
+2. Enter the recipient's **character name** in Retail. Use **Name-Realm** for a
+   different realm. In Forever, enter their **first and last name** separated by
+   a space. Optionally name the package or enable **Include gathered
+   quantities**, then click **Offer to player**.
+3. The recipient opens **Transfers** and clicks **Accept**. Both players can
+   follow the progress or cancel. **Transfers with more than 1,000 finds may take
+   a while.** Keep both characters logged in until delivery finishes.
+4. The recipient clicks **Review finds**, checks the new entries they want, and
+   clicks **Import selected**. MobLog skips finds the recipient already knows.
+
+Imported loot sources appear in **Items → Item catalog → Imported sources**.
+Creature coordinates are listed under **Details & Places → Imported creature
+locations**. Imported gathering spots appear on the world map and minimap when
+enabled in MobLog's settings. Imported records are labeled and kept separate from
+your personal encounter and loot statistics.
+
+To remove imported records, open **Imported finds**, choose a package or search
+for individual entries, then click **Remove → Confirm removal**. To remove the
+entire package, choose it in the dropdown and click **Undo this import →
+Confirm removal**.
 
 ## My inventory
 
@@ -205,4 +235,4 @@ The Forever catalog uses separate creature, loot and map references. Coverage is
 incomplete: some names and creature details require a personal encounter before
 the game can supply them. Instances remain loot-based only.
 
-Current release: [Changelog](publishing/changelog-1.20.md) · [Release notes](publishing/release-notes-1.20.md).
+Current release: [Changelog](publishing/changelog-1.21.md) · [Release notes](publishing/release-notes-1.21.md).

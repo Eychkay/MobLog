@@ -201,19 +201,20 @@ function ML.RefreshItems()
     if not page or not page:IsVisible() then return end
     local items=ML.ItemCatalog(search:GetText(),rarity,area,focusedItem)
     if not itemBuckets or itemBuckets.items~=items then
-        itemBuckets={items=items,observed={},gathered={},unlooted={},wishlist={},byID={}}
+        itemBuckets={items=items,observed={},gathered={},imported={},unlooted={},wishlist={},byID={}}
         for _,item in ipairs(items) do
             itemBuckets.byID[item.id]=item
             local bucket=ML.IsWishlisted(item.id) and itemBuckets.wishlist or
-                (item.quantity>0 and itemBuckets.observed or (item.gathered and itemBuckets.gathered or itemBuckets.unlooted))
+                (item.quantity>0 and itemBuckets.observed or item.gathered and itemBuckets.gathered
+                or (item.sharedDrops or item.sharedGathers) and itemBuckets.imported or itemBuckets.unlooted)
             bucket[#bucket+1]=item
         end
     end
     local observed,gathered,unlooted,wishlist=itemBuckets.observed,itemBuckets.gathered,itemBuckets.unlooted,itemBuckets.wishlist
     local chosen=itemBuckets.byID[selected]
-    if not chosen then chosen=wishlist[1] or observed[1] or gathered[1] or unlooted[1]; selected=chosen and chosen.id; right.scroll:SetVerticalScroll(0) end
+    if not chosen then chosen=wishlist[1] or observed[1] or gathered[1] or itemBuckets.imported[1] or unlooted[1]; selected=chosen and chosen.id; right.scroll:SetVerticalScroll(0) end
     local status=ML.CatalogUnavailableText()
-    local layoutKey=tostring(closed.wishlist)..":"..tostring(closed.observed)..":"..tostring(closed.gatheredItems)..":"..tostring(closed.unlooted)..":"..tostring(status~=nil)
+    local layoutKey=tostring(closed.wishlist)..":"..tostring(closed.observed)..":"..tostring(closed.gatheredItems)..":"..tostring(closed.imported)..":"..tostring(closed.unlooted)..":"..tostring(status~=nil)
     if left.layoutItems==items and left.layoutKey==layoutKey then
         if left.statusEntry then left.statusEntry.label=status end
         Draw(left)
@@ -222,6 +223,7 @@ function ML.RefreshItems()
         Category(entries,"wishlist","Wishlist",wishlist,function(item) return {item=item} end)
         Category(entries,"observed","Observed drops",observed,function(item) return {item=item} end)
         Category(entries,"gatheredItems","Gathered items",gathered,function(item) return {item=item} end)
+        Category(entries,"imported","Imported finds",itemBuckets.imported,function(item) return {item=item} end)
         Category(entries,"unlooted","Not observed drops",unlooted,function(item) return {item=item} end)
         left.statusEntry=nil
         if status then
@@ -242,12 +244,24 @@ function ML.RefreshItems()
     ML.RefreshInventoryCatalogCount()
     explanation:SetText(chosen and chosen.gathered and "Gathering sources show your recorded harvest locations.\nObserved and possible drops are listed separately."
         or "Observed sources show your personal drop rates.\nPossible sources have no recorded drop for this item yet.")
-    local sourceKey=tostring(selected)..":"..tostring(closed.gathering)..":"..tostring(closed.sources)..":"..tostring(closed.possible)..":"..
+    local sourceKey=tostring(selected)..":"..tostring(closed.shared)..":"..tostring(closed.gathering)..":"..tostring(closed.sources)..":"..tostring(closed.possible)..":"..
         ML.GetSortMode("itemSources")..":"..tostring(ML.itemSourceRevision or 0)
     if right.layoutItems==items and right.layoutKey==sourceKey then
         Draw(right)
     else
         local sources={}
+        local shared={}
+        for _,r in ipairs(chosen and chosen.sharedDrops or {}) do
+            if ML.AreaFilterIsAll(area) or ML.MatchesCatalogArea(ML.GetMob(r.npc),area) then
+                shared[#shared+1]={npc=r.npc, report=r}
+            end
+        end
+        for _,r in ipairs(chosen and chosen.sharedGathers or {}) do
+            if ML.AreaFilterIsAll(area) or ML.RecordedPlaceMatchesArea({map=r.map,zone=ML.Share.Zone(r.map),sub=""},area) then
+                shared[#shared+1]={gatherPoint=r}
+            end
+        end
+        Category(sources,"shared","Imported sources",shared,function(entry) return entry end)
         if chosen and chosen.gathered then
             local points = {}
             for _, point in pairs(chosen.gathered.sources) do
@@ -362,7 +376,8 @@ function ML.BuildItemBrowser(parent,ui)
         local item=entry.item; ML.LoadCatalogItem(item,search:GetText()=="" and rarity=="all"); row.catalogItem=item
         row.icon:SetTexture(item.icon or 134400); row.title:SetText(item.link or item.name)
         row.subtitle:SetText(item.quantity>0 and string.format("%d items · %d observed sources",item.quantity,#item.sources)
-            or (item.gathered and (item.gathered.quantity .. " items observed while gathering") or "Not observed · no drops recorded"))
+            or (item.gathered and (item.gathered.quantity .. " items observed while gathering")
+            or (item.sharedDrops or item.sharedGathers) and "Imported source" or "Not observed · no drops recorded"))
         row:SetBackdropColor(item.id==selected and 0.16 or 0.065,item.id==selected and 0.12 or 0.055,0.04,1)
     end,function(entry) if selected~=entry.item.id then ML.PushView() end; selected=entry.item.id; right.scroll:SetVerticalScroll(0); ML.RefreshItems() end)
     local panel=Panel(page); panel:SetPoint("TOPLEFT",410,-185); panel:SetSize(462,388)
@@ -370,6 +385,8 @@ function ML.BuildItemBrowser(parent,ui)
     explanation=Text(panel,11); explanation:SetPoint("TOPLEFT",14,-51); explanation:SetSize(430,36)
     inventoryButton=Button(panel,"In inventory: 0",151,function() ML.OpenInventoryItem(selected) end)
     inventoryButton:SetPoint("TOPLEFT",13,-92); inventoryButton:SetHeight(24)
+    local share=Button(panel,"Share finds",100,function() if selected then ML.OpenSharing("export",{item=selected}) end end)
+    share:SetPoint("TOPLEFT",173,-92); share:SetHeight(24)
     ML.BuildSortDropdown(panel,ui,"itemSources","mixed",282,-92,164,function()
         right.scroll:SetVerticalScroll(0); ML.RefreshItems()
     end)
@@ -378,7 +395,12 @@ function ML.BuildItemBrowser(parent,ui)
             local point = entry.gatherPoint
             row.icon:SetTexture(ML.GatherIcons[point.kind])
             row.title:SetText(ML.GatherLocationName(point))
-            row.subtitle:SetText(string.format("%s · %.1f / %.1f · %d observed", point.zone, point.x * 100, point.y * 100, point.quantity))
+            if point.shared then
+                local qty=point.loot and point.loot[selected]
+                row.subtitle:SetText(string.format("%s · %.1f / %.1f · %s", ML.Share.Zone(point.map), point.x*100, point.y*100, qty and (qty.." reported") or "Imported"))
+            else
+                row.subtitle:SetText(string.format("%s · %.1f / %.1f · %d observed", point.zone, point.x * 100, point.y * 100, point.quantity))
+            end
             row:SetBackdropColor(0.075,0.06,0.04,1)
             return
         end
@@ -386,6 +408,12 @@ function ML.BuildItemBrowser(parent,ui)
         local mob=source and source.mob or ML.GetMob(entry.npc)
         row.source=source
         row.icon:SetTexture(134400)
+        if entry.report then
+            row.title:SetText(mob and mob.name or entry.report.npcName or ("NPC #"..entry.npc))
+            row.subtitle:SetText("Reported loot source · imported")
+            row:SetBackdropColor(0.035,0.055,0.075,1)
+            return
+        end
         if not row.portrait then row.portrait=ML.CreateMobPortrait(row,30); row.portrait:SetPoint("LEFT",8,0) end
         row.portrait:Show(); row.icon:Hide(); ML.UpdateMobPortrait(row.portrait,mob)
         row.title:SetText(mob.name)
@@ -393,7 +421,7 @@ function ML.BuildItemBrowser(parent,ui)
         else row.subtitle:SetText("Not observed · availability may depend on difficulty or conditions") end
         row:SetBackdropColor(0.075,0.06,0.04,1)
     end,function(entry)
-        if entry.gatherPoint then ML.PinLocation(entry.gatherPoint); return end
+        if entry.gatherPoint then ML.OpenLocation(entry.gatherPoint); return end
         local id=entry.source and entry.source.mob.id or entry.npc
         ML.OpenMob(id)
     end)
@@ -438,6 +466,7 @@ function ML.FocusItem(id)
     ML.ResetItemsFilters(); selected=id; focusedItem=id
     closed[ML.IsWishlisted(id) and "wishlist" or "unlooted"]=false; closed.observed=false
     if ML.db.gatheredItems and ML.db.gatheredItems[id] then closed.gatheredItems=false; closed.gathering=false end
+    if ML.Share.Groups("D")[id] or ML.Share.Groups("gatherItems")[id] then closed.imported=false; closed.shared=false end
     ML.RefreshItems()
     for _,entry in ipairs(left.entries) do if entry.item and entry.item.id==id then ML.SetViewScroll(left.scroll,entry.offset); break end end
     right.scroll:SetVerticalScroll(0)

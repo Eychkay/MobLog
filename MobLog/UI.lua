@@ -870,6 +870,8 @@ local function Build()
     local footerDivider=window:CreateTexture(nil,"BORDER")
     footerDivider:SetColorTexture(0.64,0.52,0.34,0.3); footerDivider:SetPoint("BOTTOMLEFT",26,42); footerDivider:SetSize(846,1)
     local close = CreateFrame("Button", nil, window, "UIPanelCloseButton")
+    local share = Button(window,"Share finds",92,function() ML.OpenSharing() end)
+    share:SetPoint("TOPRIGHT",-42,-18)
     close:SetPoint("TOPRIGHT", -7, -7); close:SetScript("OnClick", function() window:Hide() end)
     for i, label in ipairs({ "KILL RECORDS", "NPC TYPES", "KILLS THIS SESSION" }) do
         local card = Panel(window); card:SetSize(274, 46); card:SetPoint("TOPLEFT", 26 + (i - 1) * 286, -70)

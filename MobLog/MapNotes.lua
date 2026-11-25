@@ -276,6 +276,8 @@ local function BuildGatherMarker(canvas)
             local point = self.mark
             if not point then return end
             ML.ShowGatherLocationTooltip(GameTooltip, self, point, "ANCHOR_RIGHT", self.mapID)
+            GameTooltip:AddLine(point.shared and "Alt + right-click to manage this find." or "Alt + right-click to share this spot.",1,1,1)
+            GameTooltip:Show()
         end)
         pin:SetScript("OnLeave", HideGatherTooltip)
         pin:SetMouseClickEnabled(false)
@@ -353,6 +355,16 @@ local function Attach()
     canvas:HookScript("OnSizeChanged",function() provider:PositionNotes() end)
     map:AddDataProvider(provider)
     map:AddCanvasClickHandler(function(canvas, button)
+        if button=="RightButton" and IsAltKeyDown() then
+            for i=gatheringCount,1,-1 do
+                local pin=gatheringPins[i]
+                if ML.Public(pin:IsMouseOver()) then
+                    local mark=pin.mark
+                    ML.OpenSharing(mark.shared and "manage" or "export",{map=pin.mapID,point=mark})
+                    return true,true
+                end
+            end
+        end
         if button ~= "RightButton" or not IsShiftKeyDown() then return end
         local x,y = canvas:GetNormalizedCursorPosition()
         local mapID = ML.Public(canvas:GetMapID())

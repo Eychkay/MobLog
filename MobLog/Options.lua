@@ -108,5 +108,14 @@ function ML.RegisterOptions()
             if ML.RefreshMinimapGatherPins then ML.RefreshMinimapGatherPins() end
         end)
     Settings.CreateCheckbox(category, minimapGatherPins, "Show nearby recorded ore, herb, and fishing spots on the minimap.")
+    local sharedPins = Settings.RegisterProxySetting(category, "MobLog_SharedGatherPins", Settings.VarType.Boolean,
+        "Include imported gathering spots on maps", true,
+        function() return ML.db.options.sharedGatherPins ~= false end,
+        function(value)
+            ML.db.options.sharedGatherPins = value
+            ML.RefreshGatherPins()
+            ML.RefreshMinimapGatherPins()
+        end)
+    Settings.CreateCheckbox(category, sharedPins, "Display imported spots together with your personal gathering locations on the world map and minimap.")
     Settings.RegisterAddOnCategory(category)
 end

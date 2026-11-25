@@ -306,7 +306,8 @@ end
 SLASH_MOBLOG1 = "/moblog"
 SLASH_MOBLOG2 = "/ml"
 SlashCmdList.MOBLOG = function(text)
-    if text == "tracker" then ML.ToggleHuntTracker()
+    if text == "share" then ML.OpenSharing()
+    elseif text == "tracker" then ML.ToggleHuntTracker()
     elseif text == "session" then ML.OpenSessionReport()
     elseif text == "add" then ML.ConfirmTarget()
     elseif text == "repair" then
